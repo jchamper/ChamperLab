@@ -21,22 +21,21 @@ initialize() {
     // NEW STUFF:
     defineCfgParam("REMATE_CHANCE", 0.05);
     defineCfgParam("OLD_LARVA_COMPETITION_FACTOR", 5.0);
-    defineCfgParam("NUM_ADULT_FEMALES", 25000);
+    defineCfgParam("NUM_ADULT_FEMALES", 10000);  
     defineConstant("AVG_NUM_EGG_BATCHES", (1522 / 729) * 0.6);
     defineCfgParam("BETAMAX", 25);
     defineCfgParam("FRACTION_OF_FEMALES_THAT_REPRODUCE_PER_WEEK", 0.5);
 
     defineConstant("INITIAL_FEMALE_AGE_DISTRIBUTION", c(0, 0.285714286, 0.285714286, 0.238095238, 0.19047619, 0.142857143, 0.095238095, 0.047619048)); 
     defineConstant("INITIAL_MALE_AGE_DISTRIBUTION", c(0, 0.285714286, 0.285714286, 0.19047619, 0.095238095));
-    // defineConstant("INITIAL_FEMALE_AGE_DISTRIBUTION", c(0.25, 0.17, 0.17, 0.14, 0.10, 0.08, 0.06, 0.03));
-    // defineConstant("INITIAL_MALE_AGE_DISTRIBUTION", c(0.35, 0.24, 0.24, 0.11, 0.06));
 
     // Fitness parameters:
-    defineCfgParam("DD_FITNESS_VALUE", 1.0);
+    defineCfgParam("DRIVE_CONVERSION", 0.8);
+    defineCfgParam("DD_FITNESS_VALUE", 0.95);
     defineCfgParam("DX_FITNESS_VALUE", sqrt(DD_FITNESS_VALUE));
-    defineCfgParam("SOMATIC_FITNESS_MUTLIPLIER_F", 0.5);
+    defineCfgParam("SOMATIC_FITNESS_MUTLIPLIER_F", 0.9);
     defineCfgParam("SOMATIC_FITNESS_MUTLIPLIER_M", 1.0);
-    defineCfgParam("GENE_DISRUPTION_FITNESS_MULTIPLIER", 0.95);
+    defineCfgParam("GENE_DISRUPTION_FITNESS_MULTIPLIER", 0.0);
     defineCfgParam("R2_FITNESS_VALUE", 1.0);
 
     // Drive type:
@@ -46,22 +45,22 @@ initialize() {
     defineCfgParam("GENE_DISRUPTION_DRIVE", F);
     defineCfgParam("RECESSIVE_FEMALE_STERILE_SUPPRESSION_DRIVE", T);
     defineCfgParam("HAPLOLETHAL_SUPPRESSION_DRIVE", F);
-    defineCfgParam("X_SHRED_RATE", 0.93);
+    defineCfgParam("X_SHRED_RATE", 0.0);
 
     // Resistance phase parameters:
     defineCfgParam("NUM_CUT_PHASES", 1);
-    defineCfgParam("GERMLINE_RESISTANCE_CUT_RATE_F", 0.01);
-    defineCfgParam("GERMLINE_RESISTANCE_CUT_RATE_M", 0.02);
+    defineCfgParam("GERMLINE_RESISTANCE_CUT_RATE_F", 0.5*(1-DRIVE_CONVERSION));
+    defineCfgParam("GERMLINE_RESISTANCE_CUT_RATE_M", 0.5*(1-DRIVE_CONVERSION));
     defineCfgParam("LATE_GERMLINE_RESISTANCE_CUT_RATE_F", 0.0);
     defineCfgParam("LATE_GERMLINE_RESISTANCE_CUT_RATE_M", 0.0);
-    defineCfgParam("EMBRYO_RESISTANCE_CUT_RATE_F", 0.04454);
+    defineCfgParam("EMBRYO_RESISTANCE_CUT_RATE_F", 0.1);
     defineCfgParam("EMBRYO_RESISTANCE_CUT_RATE_M", 0.0);
     defineCfgParam("HET_MOTHER_CAS_INHERITANCE", 1.83);
     defineCfgParam("R1_OCCURRENCE_RATE", 0.0);
 
     // HDR phase parameters:
-    defineCfgParam("HOMING_PHASE_CUT_RATE_F", 0.99);
-    defineCfgParam("HOMING_PHASE_CUT_RATE_M", 0.96);
+    defineCfgParam("HOMING_PHASE_CUT_RATE_F", DRIVE_CONVERSION/(1-0.5*(1-DRIVE_CONVERSION)));
+    defineCfgParam("HOMING_PHASE_CUT_RATE_M", DRIVE_CONVERSION/(1-0.5*(1-DRIVE_CONVERSION)));
     defineCfgParam("HOMING_EDGE_EFFECT", 0.055);
     defineCfgParam("BASELINE_HOMING_SUCCESS_RATE", 1.0);
     defineCfgParam("PARTIAL_HDR_RATE", 0.0);
@@ -86,7 +85,7 @@ initialize() {
     defineCfgParam("MAX_ATTEMPTS_TO_FIND_SUITABLE_MATE", 10);
     defineCfgParam("LOW_DENSITY_GROWTH_RATE", 10);
     defineCfgParam("RATE_FEMALES_SURVIVE", 0.0);  // For partially overlapping generations.
-    defineCfgParam("MALE_ONLY_DROP", T);
+    defineCfgParam("MALE_ONLY_DROP", F);
     defineCfgParam("FEMALE_ONLY_DROP", F);
     defineCfgParam("HETEROZYGOUS_DROP", T);
 
@@ -780,7 +779,7 @@ early() {
 }
 
 //// FOR SPECIAL RUNS TO CALC GENETIC LOAD.
-late() {
+/*late() {
     if (GL_RUN) {
         all = sim.subpopulations[0].individuals;
         total_males = 0;
@@ -813,7 +812,7 @@ late() {
         rm("BONUS_POP_FACTOR", removeConstants=T);
         defineConstant("BONUS_POP_FACTOR", new_bonus_pop_factor);
     }
-}
+}*/
 
 //// PROGRAM OUTPUT.
 late() {
@@ -845,13 +844,22 @@ late() {
     rate_complete_r2 = num_complete_r2 / (2 * size(all));
     rate_partial_r2 = num_partial_r2 / (2 * size(all));
     rate_has_drive = num_has_drive / (size(all));
-
+	 
+	 females = all[all.sex=="F"];
+    adult_females = females[females.age>0];
+    num_fertile_females = sum(adult_females.countOfMutationsOfType(m1) | adult_females.countOfMutationsOfType(m3));
+    
+    adult_F = all[all.sex == "F" & all.age>0];
+    fertile_F = sum(adult_F.countOfMutationsOfType(m1) | adult_F.countOfMutationsOfType(m3));
     // Output for humans to look at:
     cat("Rates in " + p1.individualCount + " individuals in generation " + paste(asInteger(sim.generation) - 1) + ":\n");
-    cat("wt: " + rate_wt + "\tdr: " + rate_dr + "\tr1: " + rate_complete_r1 + "\tpart r1: " + rate_partial_r1 +
+    print("CHECK:: ");
+	 print(size(all[all.sex == "F" & all.age>0]));
+    catn("DATA:: " + num_fertile_females + "," + fertile_F + "," + rate_dr + ",");
+    /*cat("wt: " + rate_wt + "\tdr: " + rate_dr + "\tr1: " + rate_complete_r1 + "\tpart r1: " + rate_partial_r1 +
             "\tr2: " + rate_complete_r2 + "\tpart r2: " + rate_partial_r2 + "\t%inds with dr: " + rate_has_drive + "\n");
     if (num_dr)
-        cat("Number of drive alleles present: " + num_dr + "\n");
+        cat("Number of drive alleles present: " + num_dr + "\n");*/
 
     // Calculate expected number of individuals in the next generation (for calcing genetic load in python)
     // expected_next_gen_pop_if_no_drive = 2 * sum(all.sex == "F") * (LOW_DENSITY_GROWTH_RATE / (((LOW_DENSITY_GROWTH_RATE - 1) * p1.individualCount / CAPACITY) + 1));
@@ -859,9 +867,9 @@ late() {
     expected_larvae_if_no_drive = BETAMAX * sum(all[all.sex == "F"].age>0) * FRACTION_OF_FEMALES_THAT_REPRODUCE_PER_WEEK;
 
     // Output for python to look at:
-    catn("PYTHON:: " + rate_wt + " " + rate_dr + " " + rate_complete_r1 + " " + rate_partial_r1 + " " +
+    /*catn("PYTHON:: " + rate_wt + " " + rate_dr + " " + rate_complete_r1 + " " + rate_partial_r1 + " " +
             rate_complete_r2 +" " + rate_partial_r2 + " " + rate_has_drive + " " +
-            paste(asInteger(sim.generation) - 1) + " " + ACTUAL_LARVAE * PREV_BONUS_POP_FACTOR + " " + expected_larvae_if_no_drive);
+            paste(asInteger(sim.generation) - 1) + " " + ACTUAL_LARVAE * PREV_BONUS_POP_FACTOR + " " + expected_larvae_if_no_drive);*/
 
     // adult_female = sum(all[all.sex == "F"].age>0);
     // adult_male = sum(all[all.sex == "M"].age>0);
@@ -922,6 +930,6 @@ late() {
 }
 
 //// PROGRAM END CONDITION.
-1426 late() {
+1010 late() {
     sim.simulationFinished();
 }
