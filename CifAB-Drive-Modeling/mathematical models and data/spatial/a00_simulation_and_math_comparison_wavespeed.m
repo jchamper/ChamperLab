@@ -1,0 +1,14 @@
+clc;clear;close all;
+FONTSIZE = 20;
+title_ = 'spatial00 simulation math comparison';
+load('tempdataa01_speed_wavespeed.mat');
+x = 0.01:0.01:0.1;
+y = [0.00068883645, 0.0013020339999999999, 0.0018649895, 0.0025028950000000006, 0.003053346, 0.0038245974999999996, 0.004538289999999999, 0.0049802, 0.005661388, 0.0063907734999999995];
+plot(SPEED_x,wavespeed_y,x,y,"LineWidth",2);
+fontsize(gcf,FONTSIZE,"points");
+xlabel("Dispersion",'FontSize',FONTSIZE);
+ylabel("Wave speed",'FontSize',FONTSIZE);
+legend("math model","simulation model","Location","northwest");
+set(gcf,'OuterPosition',[27 101 576 642]);
+set(gca,'Position',[0.18 0.231751824817518 0.63 0.618406902006191]);
+exportgraphics(gcf,[title_ '.png'],'Resolution',600);

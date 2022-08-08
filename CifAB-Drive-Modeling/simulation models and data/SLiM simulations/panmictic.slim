@@ -1,0 +1,283 @@
+initialize(){
+	defineCfgConstant("FITNESS",1.0);
+	defineCfgConstant("INTRODUCTION_FREQUENCY",0.39); //cifAB
+	defineCfgConstant("INTRODUCTION_A",0.0);
+	defineCfgConstant("INTRODUCTION_B",0.0);
+	defineCfgConstant("SUBPOP_SIZE",3000);
+	defineCfgConstant("GENERATIONS",200);//everything ends here. Lost.
+	
+	//output configuration
+	defineCfgConstant("PRINT_FREQUENCIES",F); //if false, only prints fixed/lost
+	
+	//drive type
+	defineCfgConstant("AB_TOGETHER",T);
+	defineCfgConstant("SAME_LOCI",F);
+	defineCfgConstant("SAME_LOCI_HETEROZYGOTE",F);//or else double homozygote
+	defineCfgConstant("DIFFERENT_LOCI",F);
+	defineCfgConstant("B_TOXIN",F);//only for different loci double homozygotes
+	
+	
+	//dominance(for per-allele fitness calculations)
+	defineCfgConstant("NOT_PER_ALLELE_FITNESS",F);
+	defineCfgConstant("DOMINANCE_COEFFICIENT",1);//only for cifAB experiments
+	
+	//ecology parameters
+	defineConstant("ZERO_DENSITY_GROWTH_RATE",10);
+	defineConstant("MAX_OFFSPRING",50);
+	defineCfgConstant("MAX_ATTEMPTS_TO_FIND_MATE",10);
+	
+	//drive efficiency
+	defineCfgConstant("EFFICIENCY_A",1);
+	defineCfgConstant("EFFICIENCY_B",1);
+	
+	//migration parameters
+	defineCfgConstant("MIGRATION",F);
+	defineCfgConstant("MIGRATION_RATE",0.05);
+	
+	//genes	
+	initializeSLiMModelType("nonWF");
+	
+	wt = initializeMutationType("m1", 0.5, "f", 0.0);
+	AB = initializeMutationType("m2", 0.5, "f", 0.0);
+	A = initializeMutationType("m3", 0.5, "f", 0.0);
+	B = initializeMutationType("m4", 0.5, "f", 0.0);	initializeGenomicElementType("g1", c(m1, m2, m3, m4), c(1, 1, 1, 1));
+	
+	c(m1,m2,m3,m4).mutationStackPolicy = "l";
+	c(m1,m2,m3,m4).mutationStackGroup = 1;
+	m1.color = "white";
+	m2.color = "pink";
+	m3.color = "yellow";
+	m4.color = "green";
+	
+	//chromosome settings
+	if (AB_TOGETHER | SAME_LOCI)
+		initializeGenomicElement(g1, 0, 0);
+	else if (DIFFERENT_LOCI)
+		initializeGenomicElement(g1, 0, 1);
+	
+	initializeMutationRate(0);
+	initializeRecombinationRate(0.5);
+	initializeSex("A");}
+
+
+function (void) defineCfgConstant(string$ name, lifs value) {
+	if (!exists(name))
+		defineConstant(name, value);}
+
+
+function (o) readMut(s mut){
+	if(mut=="wt") return m1;
+	if (mut=="AB") return m2;
+	if (mut=="A") return m3;
+	if (mut=="B") return m4;}
+
+
+function(v)dropDrives(o$ subPop, s genes, numeric$ dropSize)
+{dropSize=asInteger(dropSize);
+	//genes is array with 2 or 4 strings
+	if (dropSize==0)return;
+	sim.addSubpop("p0", asInteger(dropSize));
+	drop = p0.individuals;
+	if (AB_TOGETHER | SAME_LOCI){
+		drop.genome1.addNewDrawnMutation(readMut(genes[0]),0);
+		drop.genome2.addNewDrawnMutation(readMut(genes[1]),0);}
+	else if (DIFFERENT_LOCI){
+		drop.genome1.addNewDrawnMutation(readMut(genes[0]),0);
+		drop.genome2.addNewDrawnMutation(readMut(genes[1]),0);
+		drop.genome1.addNewDrawnMutation(readMut(genes[2]),1);
+		drop.genome2.addNewDrawnMutation(readMut(genes[3]),1);}
+	subPop.takeMigrants(drop);
+	p0.removeSubpopulation();}
+
+
+function(l)isEfficient(o ind, fi efficiency, o mutationType){	alleles=sum(ind.genomes.countOfMutationsOfType(mutationType));
+	if (alleles!=0){
+		successRate=1-(1-efficiency)^alleles;
+		if (runif(1) < successRate)
+			return T;}
+	return F;}
+
+
+function (l)canHaveChild (o ind, o mate){
+	//ind is female, mate is male
+	if (AB_TOGETHER){
+		//cifAB, can't have child if father has A and B working, and mother doesn't have A working
+		if (isEfficient(mate,EFFICIENCY_A,m2) &  isEfficient(mate,EFFICIENCY_B,m2) & (!isEfficient(ind,EFFICIENCY_A,m2)))
+			return F;}
+	
+	else if (SAME_LOCI){
+		if (isEfficient(mate,EFFICIENCY_A,m3) &  isEfficient(mate,EFFICIENCY_B,m4) & (!isEfficient(ind,EFFICIENCY_A,m3)))
+			return F;}
+	
+	else if (DIFFERENT_LOCI){
+		if (B_TOXIN){
+			if (isEfficient(mate,EFFICIENCY_B,m4) & (!isEfficient(ind,EFFICIENCY_A,m3)))
+				return F;}
+		else{if (isEfficient(mate,EFFICIENCY_A,m3) &  isEfficient(mate,EFFICIENCY_B,m4) & (!isEfficient(ind,EFFICIENCY_A,m3)))
+				return F;}}
+	return T;}
+
+
+
+function (v)migrate(o now,o target,f rate){
+	migrationSize1=asInteger(now.individualCount*rate);	migrationSize2=asInteger(target.individualCount*rate);
+	toMigrate1=now.sampleIndividuals(migrationSize1);
+	toMigrate2=target.sampleIndividuals(migrationSize2);
+	target.takeMigrants(toMigrate1);
+	now.takeMigrants(toMigrate2);}
+
+
+function (f)calcFitness(o ind){
+	if (AB_TOGETHER){
+		sumAB=sum(ind.genomes.countOfMutationsOfType(m2));
+		if (NOT_PER_ALLELE_FITNESS){
+			//calculate with dominance
+			if (sumAB == 0) return 1.0;
+			else if (sumAB == 1) return (FITNESS * DOMINANCE_COEFFICIENT + 1 - DOMINANCE_COEFFICIENT)*1.0;
+			else if (sumAB == 2) return FITNESS * 1.0;}
+		//calculate per-allele fitness
+		else if (!NOT_PER_ALLELE_FITNESS) return FITNESS^sumAB;}
+	else if (SAME_LOCI | DIFFERENT_LOCI){
+		sumA=sum(ind.genomes.countOfMutationsOfType(m3));
+		return 1.0*FITNESS^sumA;}}
+
+
+function (f)calcResult (o mut,o subpop){
+	/**0allele, 1carrier*/
+	all=subpop.individuals;
+	alleleCount=sum(all.genomes.countOfMutationsOfType(mut));
+	alleleFrequency=alleleCount/(size(all)*2);
+	carrierCount=sum(all.genome1.countOfMutationsOfType(mut)>0
+		| all.genome2.countOfMutationsOfType(mut)>0);
+	carrierFrequency=carrierCount/size(all);
+	return c(alleleFrequency,carrierFrequency);}
+
+
+
+1 {
+	/**adds original p1*/
+	sim.addSubpop("p1",asInteger(SUBPOP_SIZE));
+	if (AB_TOGETHER | SAME_LOCI)
+		p1.individuals.genomes.addNewDrawnMutation(m1, 0);
+	else
+		p1.individuals.genomes.addNewDrawnMutation(m1, c(0,1));
+	if (MIGRATION){
+		sim.addSubpop("p2", SUBPOP_SIZE);
+		if (AB_TOGETHER | SAME_LOCI)
+			p2.individuals.genomes.addNewDrawnMutation(m1,0);
+		else
+			p2.individuals.genomes.addNewDrawnMutation(m1, c(0,1));}}
+
+
+
+1
+	/**introduce drives*/
+{if (AB_TOGETHER)
+		dropDrives(p1,c("AB","AB"),SUBPOP_SIZE*INTRODUCTION_FREQUENCY/(1-INTRODUCTION_FREQUENCY));
+	else if (SAME_LOCI){
+		if (SAME_LOCI_HETEROZYGOTE)
+			dropDrives(p1,c("A","B"),SUBPOP_SIZE*INTRODUCTION_FREQUENCY/(1-INTRODUCTION_FREQUENCY));
+		else if (!SAME_LOCI_HETEROZYGOTE){
+			//same loci double homozygotes
+			intro = INTRODUCTION_A + INTRODUCTION_B;
+			a_ratio = INTRODUCTION_A / intro;
+			b_ratio = INTRODUCTION_B / intro;
+			dropDrives(p1,c("A","A"),a_ratio*SUBPOP_SIZE*intro/(1-intro));
+			dropDrives(p1,c("B","B"),b_ratio*SUBPOP_SIZE*intro/(1-intro));}}
+	else if (DIFFERENT_LOCI)
+		dropDrives(p1,c("A","A","B","B"),SUBPOP_SIZE*INTRODUCTION_FREQUENCY/(1-INTRODUCTION_FREQUENCY));}
+
+reproduction(NULL, "F"){
+found = 0;
+for (i in seqLen(MAX_ATTEMPTS_TO_FIND_MATE)){
+	mate = subpop.sampleIndividuals(1, sex="M");
+	if (runif(1) < calcFitness(mate)) break;}
+	if (!canHaveChild(individual,mate)) return;
+	capacityFitnessScaling = ZERO_DENSITY_GROWTH_RATE / (((ZERO_DENSITY_GROWTH_RATE-1) * individual.subpopulation.individualCount / SUBPOP_SIZE) + 1);
+	p = calcFitness(individual) * capacityFitnessScaling * 2 / MAX_OFFSPRING;
+	offspringNum = rbinom(1, MAX_OFFSPRING, p);
+	if (offspringNum==0) return;
+	for (i in seqLen(offspringNum)){
+		offspring=subpop.addCrossed(individual, mate);}}
+
+
+1: {
+	//migrate at the start of each generation
+	if (MIGRATION)
+		migrate(p1,p2,MIGRATION_RATE);
+	/**display results*/
+	//stop simulation if lost
+	if (PRINT_FREQUENCIES){
+		if (AB_TOGETHER){
+			al = sum(p1.individuals.countOfMutationsOfType(m2))/p1.individualCount/2;
+			ca = sum(p1.individuals.countOfMutationsOfType(m2)>0)/p1.individualCount;
+			if (!MIGRATION)
+				//allele + carrier
+				catn("GEN:" + sim.generation + " " + al + " " + ca);
+			else if (MIGRATION){
+				lk_al = sum(p2.individuals.countOfMutationsOfType(m2))/p2.individualCount/2;
+				lk_ca = sum(p2.individuals.countOfMutationsOfType(m2)>0)/p2.individualCount;
+				catn("GEN:" + sim.generation + " " + al + " " + ca + " " + lk_al + " " + lk_ca);}}
+		else if (SAME_LOCI | DIFFERENT_LOCI){
+			//cifA allele, cifA carrier, cifB allele, cifB carrier
+			a_al = sum(p1.individuals.countOfMutationsOfType(m3))/p1.individualCount/2;
+			a_ca = sum(p1.individuals.countOfMutationsOfType(m3)>0)/p1.individualCount;
+			b_al = sum(p1.individuals.countOfMutationsOfType(m4))/p1.individualCount/2;
+			b_ca = sum(p1.individuals.countOfMutationsOfType(m4)>0)/p1.individualCount;
+			catn("GEN:" + sim.generation + " " + a_al + " " + a_ca + " " + b_al + " " + b_ca);}}
+}
+
+/**detect whether fixed*/
+//print it out first, whether really fixed or not
+1:{
+	if (AB_TOGETHER){
+		if (sum(p1.individuals.countOfMutationsOfType(m2)>0)/p1.individualCount > 0.99){
+			catn("FIXED:" + sim.generation); //introduction deme
+			sim.deregisterScriptBlock(self);}}
+	else if (SAME_LOCI | DIFFERENT_LOCI){
+		if (sum(p1.individuals.countOfMutationsOfType(m3)>0)/p1.individualCount > 0.99){
+			catn("AFIXED:" + sim.generation);
+			sim.deregisterScriptBlock(self);}
+	
+	}}
+
+1:{
+	if (AB_TOGETHER & MIGRATION)
+		if (sum(p2.individuals.countOfMutationsOfType(m2)>0)/p2.individualCount > 0.99){
+			catn("LINKED_FIXED:" + sim.generation); //linked deme
+			sim.deregisterScriptBlock(self);}
+}
+
+//end simulation if generation limit exceeded or lost/fixed and generation data not needed
+1:{
+	if (sim.generation > GENERATIONS)
+		sim.simulationFinished();
+	
+	if (!PRINT_FREQUENCIES){
+		//fixed
+		if (sim.generation > 30){
+			if (AB_TOGETHER &  sum(p1.individuals.countOfMutationsOfType(m2)>0)/p1.individualCount > 0.99)
+				sim.simulationFinished();
+			else if ((SAME_LOCI | DIFFERENT_LOCI) & sum(p1.individuals.countOfMutationsOfType(m3)>0)/p1.individualCount > 0.99)
+				sim.simulationFinished();}
+		
+		//lost
+		if (AB_TOGETHER) {
+			if (!MIGRATION){
+				if (sum(p1.individuals.countOfMutationsOfType(m2)>0)/p1.individualCount < 0.01){
+					catn("LOST");
+					sim.simulationFinished();}}
+			else if (MIGRATION){
+				if (sum(p1.individuals.countOfMutationsOfType(m2)>0)/p1.individualCount < 0.01 & sum(p2.individuals.countOfMutationsOfType(m2)>0)/p2.individualCount < 0.01){
+					catn("LOST");
+					sim.simulationFinished();}}}
+		else if (SAME_LOCI | DIFFERENT_LOCI){
+			if (sum(p1.individuals.countOfMutationsOfType(m3)>0)/p1.individualCount < 0.01){
+				catn("ALOST:");
+				sim.simulationFinished();}}}}
+
+1:late(){
+	for (ind in sim.subpopulations.individuals)
+		ind.fitnessScaling = 0;}
+
+300{}

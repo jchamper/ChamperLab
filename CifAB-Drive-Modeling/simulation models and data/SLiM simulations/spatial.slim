@@ -1,0 +1,215 @@
+initialize(){
+	defineCfgConstant("DROP_RADIUS", 0.3);
+	defineCfgConstant("INTRODUCTION_FREQUENCY",0.8); //drop density inside drop radius
+	defineCfgConstant("SPEED",0.03);
+	defineCfgConstant("SPATIAL_LINEAR",F);
+	defineCfgConstant("TOTAL_INDS", 10000);
+	defineCfgConstant("DRIVE_FITNESS",1.0);
+	if (SPATIAL_LINEAR){
+		defineConstant("DROP_SIZE", asInteger(TOTAL_INDS/2)); //drive total size
+		defineCfgConstant("WT_SIZE", TOTAL_INDS - DROP_SIZE);} //wt total size}
+	else if (!SPATIAL_LINEAR){
+		defineConstant("DROP_SIZE", asInteger(TOTAL_INDS * PI * DROP_RADIUS^2 * INTRODUCTION_FREQUENCY / (1-INTRODUCTION_FREQUENCY))); //drive total size
+		defineCfgConstant("WT_SIZE", asInteger(TOTAL_INDS));} //wt total size
+	defineCfgConstant("DENSITY_INTERACTION_DISTANCE",0.01);
+	defineCfgConstant("MIGRATION_RATE", 0.0);
+	defineCfgConstant("DRIVE_EFFICIENCY",1.0);
+	defineCfgConstant("MAX_ATTEMPTS_TO_FIND_MATE", 10);
+	
+	defineCfgConstant("OUTPUT_GENERATION_DATA",F);
+	initializeSLiMModelType("nonWF");
+	defineConstant("ZERO_DENSITY_GROWTH_RATE", 10);
+	defineConstant("MAX_OFFSPRING", 50);
+	
+	defineConstant("EXPECTED_COMPETITION",TOTAL_INDS*PI*DENSITY_INTERACTION_DISTANCE^2/3);
+	defineConstant("MATING_DISTANCE",SPEED);
+	defineCfgConstant("UNIFORM_CIRCLE_DROP", T);
+	defineCfgConstant("LEFT_EDGE_DROP", F);
+	defineCfgConstant("UNIFORM_DROP",F);
+	initializeSLiMOptions(keepPedigrees = T, dimensionality = "xy");
+	// Mate searching:
+	initializeInteractionType(1, "xy", reciprocal=T, maxDistance=MATING_DISTANCE);
+	// Adult competition:
+	initializeInteractionType(2, "xy", reciprocal=T, maxDistance=DENSITY_INTERACTION_DISTANCE);
+	i2.setInteractionFunction("l", 1.0);
+	
+	// genes:
+	wt = initializeMutationType("m1", 0.5, "f", 0.0);
+	AB = initializeMutationType("m2", 0.5, "f", 0.0);
+	c(m1,m2).mutationStackPolicy = "l";
+	c(m1,m2).mutationStackGroup = 1;
+	
+	m1.color = "white";
+	m2.color = "pink";
+	
+	
+	initializeMutationRate(0);
+	initializeGenomicElementType("g1", c(m1, m2), c(1, 1));
+	initializeGenomicElement(g1, 0, 0);
+	initializeRecombinationRate(0.5);
+	initializeSex("A");}
+
+//to run slim with python
+function (void) defineCfgConstant(string$ name, lifs value) {
+	if (!exists(name))
+		defineConstant(name, value);}
+
+function (o) readMut(s mut){
+	if(mut=="wt") return m1;
+	if (mut=="AB") return m2;}
+
+
+function(v)dropDrives(o$ subPop, s genes, numeric$ dropSize){
+	dropSize=asInteger(dropSize);
+	if (dropSize==0)return;
+	sim.addSubpop("p0", asInteger(dropSize));
+	drop = p0.individuals;
+	drop.genome1.addNewDrawnMutation(readMut(genes[0]),0);
+	drop.genome2.addNewDrawnMutation(readMut(genes[1]),0);
+	subPop.takeMigrants(drop);
+	if (SPATIAL_LINEAR){
+		drop.x = runif(dropSize,0,0.5);
+		drop.y = runif(dropSize);}
+	else if (!SPATIAL_LINEAR){
+		if (LEFT_EDGE_DROP) { // Left-rectangle drop
+			drop.x = runif(dropSize,0,DROP_RADIUS);
+			drop.y = runif(dropSize);}
+		else if (UNIFORM_CIRCLE_DROP) {
+			//Get circle, then resize according to drop radius.
+			for (ind in drop){
+				ind.x = runif(1);
+				ind.y = runif(1);
+				while ((ind.x-0.5)^2 + (ind.y-0.5)^2 > 0.25){
+					ind.x = runif(1);
+					ind.y = runif(1);}
+				ind.x = 0.5 + (ind.x-0.5) * DROP_RADIUS / 0.5;
+				ind.y = 0.5 + (ind.y-0.5) * DROP_RADIUS / 0.5;}}
+		else if (UNIFORM_DROP) { //Scattered uniformly
+			drop.x = runif(dropSize);
+			drop.y = runif(dropSize);}}
+	p0.removeSubpopulation();}
+
+
+function(l)isEfficient(o ind, fi efficiency, o mutationType){
+	alleles=sum(ind.genomes.countOfMutationsOfType(mutationType));
+	if (alleles!=0){
+		successRate=1-(1-efficiency)^alleles;
+		if (runif(1) < successRate)
+			return T;}
+	return F;}
+
+function (l)canHaveChild (o ind, o mate){
+	if (isEfficient(mate, DRIVE_EFFICIENCY, m2)& (!isEfficient(ind,DRIVE_EFFICIENCY,m2))) return F;
+	return T;}
+
+function (f)calcFitness(o ind){
+	sumAB=sum(ind.genomes.countOfMutationsOfType(m2));
+	return DRIVE_FITNESS ^ sumAB;}
+
+
+function (f)calcResult (o mut,o subpop){
+	//calculates mutation allele frequency as well as carrier frequency
+	all=subpop.individuals;
+	alleleCount=sum(all.genomes.countOfMutationsOfType(mut));
+	alleleFrequency=alleleCount/(size(all)*2);
+	carrierCount=sum(all.genome1.countOfMutationsOfType(mut)>0
+		| all.genome2.countOfMutationsOfType(mut)>0);
+	carrierFrequency=carrierCount/size(all);
+	return c(alleleFrequency,carrierFrequency);}
+
+
+1 {
+	sim.addSubpop("p1", asInteger(WT_SIZE));
+	p1.individuals.genomes.addNewDrawnMutation(m1, 0);
+	if (!SPATIAL_LINEAR)
+		p1.individuals.x = runif(WT_SIZE);
+	else if (SPATIAL_LINEAR)
+		p1.individuals.x = runif(WT_SIZE,0.5,1.0);
+	p1.individuals.y = runif(WT_SIZE);
+	dropDrives(p1, c("AB","AB"), DROP_SIZE);}
+
+late(){
+	all = sim.subpopulations.individuals;
+	for (ind in all) ind.fitnessScaling = 0;
+	i1.evaluate();
+	i2.evaluate();
+	//	survivors=all[all.fitnessScaling>0.0];
+	//	for (i in survivors){
+	//		pos = i.spatialPosition + rnorm(2,0,SPEED);
+	//		if (!i.subpopulation.pointInBounds(pos))
+	//		{posx = max(0.0, min(1.0, i.x));
+	//			posy = max(0.0, min(1.0, i.y));
+	//			pos = c(posx, posy);}
+	//	i.setSpatialPosition(pos);}
+}
+
+
+
+reproduction(NULL, "F"){
+	mate=NULL;
+	candidates = i1.nearestNeighbors(individual, subpop.individualCount);
+	candidates = candidates[candidates.sex == "M"];
+	num_attempts = min(MAX_ATTEMPTS_TO_FIND_MATE, size(candidates));
+	for (_ in seqLen(num_attempts)){
+		i = candidates[rdunif(1,0,num_attempts-1)];
+		if (runif(1)<calcFitness(i)){
+			mate=i;
+			break;}}
+	if (isNULL(mate))return;
+	if (!canHaveChild(individual,mate)) return;
+	
+	//competition. 
+	all_neighbor = i2.nearestNeighbors(individual,subpop.individualCount);
+	densityForce = sum(i2.strength(individual,all_neighbor));
+	//densityForce=i2.totalOfNeighborStrengths(individual);
+	competitionRatio = densityForce / EXPECTED_COMPETITION;
+	actualCompetition=ZERO_DENSITY_GROWTH_RATE/((ZERO_DENSITY_GROWTH_RATE-1)*competitionRatio+1);
+	p=calcFitness(individual) * actualCompetition*0.04;
+	offspringNum = rbinom(1, MAX_OFFSPRING, p);
+	if (offspringNum==0) return;
+	for (i in seqLen(offspringNum)){
+		offspring=subpop.addCrossed(individual, mate);
+		do position = individual.spatialPosition + rnorm(2, 0, SPEED);
+		//speed is standard deviation
+		while (!individual.subpopulation.pointInBounds(position));
+		offspring.setSpatialPosition(position);}}
+
+10{
+	/**collect data*/
+	mut = m2;
+	all=p1.individuals;
+	total_drive_carriers = sum(all.countOfMutationsOfType(mut)>0);
+	total_individuals = length(all);
+	carrier_frequency = total_drive_carriers / total_individuals;
+	catn("GEN" + sim.generation + ":" + carrier_frequency);}
+
+15{
+	
+	mut = m2;
+	all=p1.individuals;
+	total_drive_carriers = sum(all.countOfMutationsOfType(mut)>0);
+	total_individuals = length(all);
+	carrier_frequency = total_drive_carriers / total_individuals;
+	catn("GEN" + sim.generation + ":" + carrier_frequency);
+	sim.simulationFinished();
+
+}
+
+
+
+
+
+
+1:
+{
+	/**generation data output*/
+	interested=m2;
+	if (OUTPUT_GENERATION_DATA)
+		//generation+allele frequency+carrier frequency
+		catn("GEN:"+sim.generation+" "+calcResult(interested,p1)[0]+" "+calcResult(interested,p1)[1]);
+	
+	//color display
+	all=p1.individuals;
+	all.color="blue";
+	for (i in all)
+	{if (i.countOfMutationsOfType(m2)>0) i.color="pink";}}
