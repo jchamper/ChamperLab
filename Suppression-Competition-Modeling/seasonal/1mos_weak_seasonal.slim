@@ -1,10 +1,11 @@
-// Author: Haochen Yang, Sam Champer and Isabel Kim.
-// Created in association with Jackson Champer 
+// Author: Haochen Yang
+// Based on Sam Champer and Isabel Kim's specific mosquito model.
+// Created in association with Jackson Champer and Yiran Liu.
 
-// A model for simulating mosquitos affected by seasonality.
+// A framework for simulating mosquito population dynamic with weak seasonal.
 
 // This version starts with a wild population,
-// allows the population to equilibrate over 15 weeks,
+// allows the population to equilibrate over 10 weeks,
 // and then drops DROP_SIZE transgenic individuals into the population.
 initialize() {
 	defineCfgParam("OUTFILE", 1);
@@ -64,17 +65,17 @@ initialize() {
 	// Resistance phase parameters:
 	defineCfgParam("NUM_CUT_PHASES", 1);
     defineCfgParam("GERMLINE_RESISTANCE_CUT_RATE_F", 0.5*(1-DRIVE_CONVERSION));
-    defineCfgParam("GERMLINE_RESISTANCE_CUT_RATE_M", 0.0);
+    defineCfgParam("GERMLINE_RESISTANCE_CUT_RATE_M", 0.5*(1-DRIVE_CONVERSION));
 	defineCfgParam("LATE_GERMLINE_RESISTANCE_CUT_RATE_F", 0.0);
 	defineCfgParam("LATE_GERMLINE_RESISTANCE_CUT_RATE_M", 0.0);
-	defineCfgParam("EMBRYO_RESISTANCE_CUT_RATE_F", 0.07911);
+	defineCfgParam("EMBRYO_RESISTANCE_CUT_RATE_F", 0.1);
 	defineCfgParam("EMBRYO_RESISTANCE_CUT_RATE_M", 0.0);
 	defineCfgParam("HET_MOTHER_CAS_INHERITANCE", 1.83);
 	defineCfgParam("R1_OCCURRENCE_RATE", 0.0);
 	
 	// HDR phase parameters:
     defineCfgParam("HOMING_PHASE_CUT_RATE_F", DRIVE_CONVERSION/(1-0.5*(1-DRIVE_CONVERSION)));
-    defineCfgParam("HOMING_PHASE_CUT_RATE_M", 1.0);
+    defineCfgParam("HOMING_PHASE_CUT_RATE_M", DRIVE_CONVERSION/(1-0.5*(1-DRIVE_CONVERSION)));
 	defineCfgParam("HOMING_EDGE_EFFECT", 0.055);
 	defineCfgParam("BASELINE_HOMING_SUCCESS_RATE", 1.0);
 	defineCfgParam("PARTIAL_HDR_RATE", 0.0);
@@ -96,7 +97,7 @@ initialize() {
 	defineCfgParam("MAX_ATTEMPTS_TO_FIND_SUITABLE_MATE", 10);
 	defineCfgParam("LOW_DENSITY_GROWTH_RATE", 10);
 	defineCfgParam("RATE_FEMALES_SURVIVE", 0.0);  // For partially overlapping generations.
-	defineCfgParam("MALE_ONLY_DROP", T);
+	defineCfgParam("MALE_ONLY_DROP", F);
 	defineCfgParam("FEMALE_ONLY_DROP", F);
 	defineCfgParam("HETEROZYGOUS_DROP", T);
 	
@@ -105,7 +106,7 @@ initialize() {
 	defineConstant("EQUILIBRIUM_WT_ALLELE_THRESHOLD", 0.8*2*CAPACITY);
 	defineConstant("NUMBER_OF_CELLS", 64);
 	
-	defineConstant("EXPECTED_COMPETITON", (NUM_ADULT_FEMALES * (2 * BETAMAX * FRACTION_OF_FEMALES_THAT_REPRODUCE_PER_WEEK + 2 * 0.285714 * OLD_LARVA_COMPETITION_FACTOR)) / 3 * PI * COMPETITION_DIST^2);
+	defineConstant("EXPECTED_COMPETITION", (NUM_ADULT_FEMALES * (2 * BETAMAX * FRACTION_OF_FEMALES_THAT_REPRODUCE_PER_WEEK + 2 * 0.285714 * OLD_LARVA_COMPETITION_FACTOR)) / 3 * PI * COMPETITION_DIST^2);
 	
 	// Calculate activity step between each gRNA.
 	if (NUM_GRNAS == 1)
@@ -554,33 +555,45 @@ function (f$)genotypeFitness(o<Individual>$ ind) {
 	wt_1 = ind.genome1.countOfMutationsOfType(m1) > 0;
 	wt_2 = ind.genome2.countOfMutationsOfType(m1) > 0;
 	
-	somatic_fitness_mult = 1;
-	if (ind.sex == "F")
-		somatic_fitness_mult = SOMATIC_FITNESS_MUTLIPLIER_F;
-	
-	// Check both chromosomes for the drive.
-	if (drive_on_1) {
-		fitness_value = DX_FITNESS_VALUE;
-		if (wt_1 | wt_2)
-			fitness_value = fitness_value * somatic_fitness_mult;
-	}
-	if (drive_on_2) {
-		fitness_value = DX_FITNESS_VALUE;
-		if (wt_1 | wt_2)
-			fitness_value = fitness_value * somatic_fitness_mult;
-	}
-	if (drive_on_1 & drive_on_2)
-		fitness_value = DD_FITNESS_VALUE;
-	
-	// If the drive is a gene function targeting drive, two copies of either
-	// the gene or r2 incur an associated fitness cost.
-	if (GENE_DISRUPTION_DRIVE)
-		if ((drive_on_1 | res2_on_1) & (drive_on_2 | res2_on_2))
-			return fitness_value - (1 - GENE_DISRUPTION_FITNESS_MULTIPLIER);
-	
-	// Return fitness for individual with this genotype.
-	return fitness_value;
+    // Check both chromosomes for the drive.
+    if (drive_on_1) {
+        fitness_value = DX_FITNESS_VALUE;
+        if (wt_1 | wt_2)
+            fitness_value = fitness_value;
+    }
+    if (drive_on_2) {
+        fitness_value = DX_FITNESS_VALUE;
+        if (wt_1 | wt_2)
+            fitness_value = fitness_value;
+    }
+    if (drive_on_1 & drive_on_2)
+        fitness_value = DD_FITNESS_VALUE;
+
+    // Return fitness for individual with this genotype.
+    return fitness_value;
 }
+
+//// RULES FOR FITNESS AFFECT FECUNDITY BASED ON GENOTYPE.
+function (f$)fecundityFitness(o<Individual>$ ind) {
+	fecundity = 1.0;
+	somatic = SOMATIC_FITNESS_MUTLIPLIER_F;
+	// check two chromosomes:
+	 drive_on_1 = ind.genome1.countOfMutationsOfType(m2) == NUM_GRNAS;
+    drive_on_2 = ind.genome2.countOfMutationsOfType(m2) == NUM_GRNAS;
+    res2_on_1 = ind.genome1.countOfMutationsOfType(m4) > 0;
+    res2_on_2 = ind.genome2.countOfMutationsOfType(m4) > 0;
+    wt_1 = ind.genome1.countOfMutationsOfType(m1) > 0;
+    wt_2 = ind.genome2.countOfMutationsOfType(m1) > 0;
+    
+    if (drive_on_1 & wt_2) 
+        fecundity = somatic;
+    if (drive_on_2 & wt_1)
+    	  fecundity = somatic;        
+    if (drive_on_1 & drive_on_2)
+		fecundity = 0.0;      
+    return fecundity;
+}
+
 
 //// FUNCTION FOR EVALUATING INFERTILITY CAUSED BY SUPRESSION DRIVES.
 function (logical)isInfertile(o<Individual>$ ind) {
@@ -657,7 +670,7 @@ reproduction(NULL, "F") {
 					mate_no = rdunif(1, max=size(neighbors) - 1);
 				selected_mate = neighbors[mate_no];
 				// Determine attractiveness of potential mate.
-				mate_attractiveness = genotypeFitness(selected_mate);
+				mate_attractiveness = 1;
 				// Determine if this mate is chosen, based on attractiveness.
 				if (runif(1) < mate_attractiveness) {
 					found_mate = T;
@@ -707,7 +720,7 @@ reproduction(NULL, "F") {
 		// Fecundity is based on both the crowding/competition in the system, as well as female fitness.
 		// Number of offspring number based on binomial distrobution.
 		num_offspring = rpois(1, BETAMAX * 2);
-		num_offspring = num_offspring * genotypeFitness(individual) * individual.tagF;
+      num_offspring = num_offspring * fecundityFitness(individual)* individual.tagF;
 		if (GL_RUN)
 			num_offspring = num_offspring / BONUS_POP_FACTOR;
 		
@@ -755,8 +768,8 @@ reproduction(NULL, "F") {
 }
 
 //// DROP A GROUP OF MODIFIED INDIVIDUALS INTO THE POPULATION.
-16 {
-	//if ((Strong_Seasonal & sim.generation>15+25.5-Strong_Seasonal_DURATION/3)|(Less_Seasonal & sim.generation>15+52/6)) {
+11 {
+	//if ((Strong_Seasonal & sim.generation>15+25.5-Strong_Seasonal_DURATION/3)|(Less_Seasonal & sim.generation>15+51/6)) {
 
 		// Add a drop of modified individuals to p1.
 		if (MALE_ONLY_DROP)
@@ -835,23 +848,23 @@ early() {
 	defineConstant("ACTUAL_LARVAE", f_larvae);
 	
 	// Seasonal fluctuation
-	if ((Seasonal)&(sim.generation>15)) {
+	if ((Seasonal)&(sim.generation>10)) {
 		rm("NUM_ADULT_FEMALES", removeConstants=T);
 		rm("CAPACITY", removeConstants=T);	
-		rm("EXPECTED_COMPETITON", removeConstants=T);
+		rm("EXPECTED_COMPETITION", removeConstants=T);
 	
 		if (Strong_Seasonal) {
-			now_gen = asInteger((sim.generation - 15) % 52);
+			now_gen = asInteger((sim.generation - 10) % 52);
 			defineConstant("NUM_ADULT_FEMALES", AVERAGE_NUM_ADULT_FEMALES + Strong_Seasonal_AMPLITUDE * StrongSeasonal(now_gen,Strong_Seasonal_DURATION));
 		}
 	
 		else if (Less_Seasonal) {
-			now_gen = asInteger((sim.generation - 15) % 52);
+			now_gen = asInteger((sim.generation - 10) % 52);
 			defineConstant("NUM_ADULT_FEMALES", AVERAGE_NUM_ADULT_FEMALES+ Less_Seasonal_AMPLITUDE * LessSeasonal(now_gen));
 			
 		}
 		defineConstant("CAPACITY", NUM_ADULT_FEMALES * 2);
-		defineConstant("EXPECTED_COMPETITON", (NUM_ADULT_FEMALES * (2 * BETAMAX * FRACTION_OF_FEMALES_THAT_REPRODUCE_PER_WEEK + 2 * 0.285714 * OLD_LARVA_COMPETITION_FACTOR)) / 3 * PI * COMPETITION_DIST^2);
+		defineConstant("EXPECTED_COMPETITION", (NUM_ADULT_FEMALES * (2 * BETAMAX * FRACTION_OF_FEMALES_THAT_REPRODUCE_PER_WEEK + 2 * 0.285714 * OLD_LARVA_COMPETITION_FACTOR)) / 3 * PI * COMPETITION_DIST^2);
 	}
 	
 	for (ind in all) {
@@ -861,8 +874,8 @@ early() {
 			old = nn[nn.age==1];
 			new_larvae = sum(i2.strength(ind, new));
 			old_larvae = sum(i2.strength(ind, old));
-			competition_ratio = (new_larvae + old_larvae * OLD_LARVA_COMPETITION_FACTOR) / EXPECTED_COMPETITON;
-			ind.fitnessScaling = (LOW_DENSITY_GROWTH_RATE / BETAMAX /((LOW_DENSITY_GROWTH_RATE - 1) * competition_ratio + 1)) * (2 * 0.285714);
+			competition_ratio = (new_larvae + old_larvae * OLD_LARVA_COMPETITION_FACTOR) / EXPECTED_COMPETITION;
+			ind.fitnessScaling = genotypeFitness(ind) * (LOW_DENSITY_GROWTH_RATE / BETAMAX / ((LOW_DENSITY_GROWTH_RATE - 1) * competition_ratio + 1)) * (2 * 0.285714);
 		}
 		else if (ind.age == 1)
 			ind.fitnessScaling = 1.0;
@@ -1048,7 +1061,7 @@ late() {
 }
 
 //// Spatial related output.
-16: late() {
+11: late() {
 	
 	
 	
@@ -1164,8 +1177,8 @@ late() {
 			if (nondrive_pop_size > 1) {
 				nondrive_greens_coeff = (var(nondrive_track)/mean(nondrive_track) - 1)/(sum(nondrive_track) - 1);
 				all_greens_coeff = (var(all_track)/mean(all_track) - 1)/(sum(all_track)-1);
-				// (1) number wt alleles (2) gen (3) population size (5) gc for chase detection (7) overall gc
-				catn("WT_ALLELES:: " + num_wt + " " + this_gen + " " + pop_size +" " + "GC_SPACE::" + " " + nondrive_greens_coeff + " " + "OVERALL_GC::" + " " +all_greens_coeff);
+				// (1) number wt alleles (2) gen (3) population size (5) gc for chase detection (7) overall gc (8) capacity
+				catn("WT_ALLELES:: " + num_wt + " " + this_gen + " " + pop_size +" " + "GC_SPACE::" + " " + nondrive_greens_coeff + " " + "OVERALL_GC::" + " " +all_greens_coeff + " " + CAPACITY);
 			}
 		}
 	}
@@ -1209,7 +1222,7 @@ late() {
 }
 
 ////END CONDITION.
-1015 late() {
+1010 late() {
 	// Output 1000 generations after drop if simulation hasn't ended already
 	all = p1.individuals;
 	has_drive = sum(all.countOfMutationsOfType(m2) >= NUM_GRNAS);

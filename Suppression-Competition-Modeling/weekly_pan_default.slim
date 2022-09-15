@@ -778,41 +778,6 @@ early() {
     }
 }
 
-//// FOR SPECIAL RUNS TO CALC GENETIC LOAD.
-/*late() {
-    if (GL_RUN) {
-        all = sim.subpopulations[0].individuals;
-        total_males = 0;
-        fertile_males = 0;
-        total_females = 0;
-        fertile_females = 0;
-        for (ind in all) {
-            if (ind.sex == "M") {
-                if (!isInfertile(ind))
-                    fertile_males = fertile_males + 1;
-                total_males = total_males + 1;
-            }
-            else {
-                if (!isInfertile(ind))
-                    fertile_females = fertile_females + 1;
-                total_females = total_females + 1;
-            }
-        }
-        if (total_males == 0 | total_females == 0)
-            new_bonus_pop_factor = 1;
-        else {
-            if (X_SHRED_RATE == 0)
-                new_bonus_pop_factor = (fertile_males / total_males) * (fertile_females / total_females);
-            else
-                // Need a different bonus pop factor for drives that bias the sex ratio.
-                new_bonus_pop_factor = (fertile_males / total_males) * (fertile_females / total_females) * (total_females / (total_females + total_males)) / 0.5;
-        }
-        rm("PREV_BONUS_POP_FACTOR", removeConstants=T);
-        defineConstant("PREV_BONUS_POP_FACTOR", BONUS_POP_FACTOR);
-        rm("BONUS_POP_FACTOR", removeConstants=T);
-        defineConstant("BONUS_POP_FACTOR", new_bonus_pop_factor);
-    }
-}*/
 
 //// PROGRAM OUTPUT.
 late() {

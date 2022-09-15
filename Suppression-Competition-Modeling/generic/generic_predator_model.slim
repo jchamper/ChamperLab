@@ -1,4 +1,7 @@
-// set up a simple female recessive fertility gene drive 
+// Author: Yiran Liu.
+// Created in association with Jackson Champer.
+// A simple model for simulating predation relationship in discrete-generation
+// The prey is target species
 initialize() {
 	
 	//fitness parameters
@@ -24,36 +27,23 @@ initialize() {
 	defineConstant("RELEASE_INTERVAL",1000);
 	
 	//SPATIAL PARAMETER
-	defineConstant("INTERACTION_DISTANCE",0.01);
+	defineConstant("INTERACTION_DISTANCE",0.02);
 	defineConstant("MIGRATION_RATE",0.04);
 	defineConstant("NUMBER_OF_CELLS",64);
 	
-	//SPECIES COMPETITION PARAMETER //A for target species(focus on)
-	defineConstant("TARGET_SPECIES_SIZE",10000);
-	defineConstant("DROP_SIZE",100);
-	defineConstant("DIFFERENT_INTRASPECIFIC_COMPETITION",F); // T OR F
-	if (DIFFERENT_INTRASPECIFIC_COMPETITION){
-		defineCfgParam("INTRASPECIFIC_COMPETITION_FACTOR_A",1.0);
-		defineCfgParam("INTRASPECIFIC_COMPETITION_FACTOR_B",0.5);	
-	}
+	//new parameter for predator:
+   defineCfgParam("PREDATOR_SIZE", 0);
+   defineCfgParam("PREDATOR_DIST", 0.08);
+   defineCfgParam("PREDATOR_INTERACTION_DIST", 0.04);
+   defineCfgParam("PREDATOR_GROWTH_RATE", 5); //low density growth rate for predator
+   defineCfgParam("PREDATOR_RESOURCE_FRACTION", 0.0);  
+   defineCfgParam("PREDATION_INTENSITY", 0.0); 
 	
-	defineConstant("ASYMMETRIC_INTERSPECIFIC_COMPETITION",F); // T OR F
-	if (ASYMMETRIC_INTERSPECIFIC_COMPETITION){
-		defineCfgParam("INTERSPECIFIC_COMPETITION_FACTOR_A",1.0); // A : MEANS THE EFFECT OF A TO B
-		defineCfgParam("INTERSPECIFIC_COMPETITION_FACTOR_B",0.1); // B : MEANS THE EFFECT OF B TO A
-		defineCfgParam("COMPETITING_SPECIES_SIZE",TARGET_SPECIES_SIZE / (1 + INTERSPECIFIC_COMPETITION_FACTOR_A));
-		defineConstant("EXPECTED_COMPETITION_RATIO_A", INTERACTION_DISTANCE^2 * PI * TARGET_SPECIES_SIZE / 3 +
-		INTERACTION_DISTANCE^2 * PI * COMPETITING_SPECIES_SIZE / (1 + INTERSPECIFIC_COMPETITION_FACTOR_A)  * INTERSPECIFIC_COMPETITION_FACTOR_B / 3);
-	   defineConstant("EXPECTED_COMPETITION_RATIO_B", INTERACTION_DISTANCE^2 * PI * TARGET_SPECIES_SIZE * INTERSPECIFIC_COMPETITION_FACTOR_A / 3 + INTERACTION_DISTANCE^2 * PI * COMPETITING_SPECIES_SIZE / (1 + INTERSPECIFIC_COMPETITION_FACTOR_A) / 3);
-      
-	}
-	else{
-		defineCfgParam("INTERSPECIFIC_COMP_FACTOR",0.0);
-		defineCfgParam("COMPETITING_SPECIES_SIZE",10000);
-		defineConstant("EXPECTED_COMPETITION_RATIO_A", INTERACTION_DISTANCE^2 * PI * TARGET_SPECIES_SIZE / 3 +
-		INTERACTION_DISTANCE^2 * PI * COMPETITING_SPECIES_SIZE * INTERSPECIFIC_COMP_FACTOR / 3);
-	   defineConstant("EXPECTED_COMPETITION_RATIO_B", INTERACTION_DISTANCE^2 * PI * TARGET_SPECIES_SIZE * INTERSPECIFIC_COMP_FACTOR / 3 + INTERACTION_DISTANCE^2 * PI * COMPETITING_SPECIES_SIZE / 3);
-	}
+	//SPECIES COMPETITION PARAMETER 
+	defineConstant("TARGET_SPECIES_SIZE",10000);
+	defineConstant("DROP_SIZE",100);	
+	defineConstant("PREY_EXPECTED_COMPETITION", 1/3 * PI * INTERACTION_DISTANCE ^ 2 * TARGET_SPECIES_SIZE + 1/3 * PI * PREDATOR_INTERACTION_DIST ^ 2*PREDATOR_SIZE * PREDATION_INTENSITY);
+   defineConstant("PREDATOR_EXPECTED_COMPETITION", 1/3 * PI * PREDATOR_INTERACTION_DIST ^ 2 * PREDATOR_SIZE / (1/3 * PI * PREDATOR_INTERACTION_DIST ^ 2 * TARGET_SPECIES_SIZE + 0.000001));
 	
 	
 	//TARGET_SPECIES CONSTANT	
@@ -61,7 +51,7 @@ initialize() {
 	
 	//ECOLOGY CONSTANT
 	defineConstant("MATING_DISTANCE", MIGRATION_RATE);
-	defineConstant("LOW_DENSITY_GROW_RATE", 10.0);
+	defineConstant("LOW_DENSITY_GROW_RATE", 10.0); 
 	defineConstant("RATE_FEMALES_SURVIVE", 0.0);
 	
 	// RELEASE FACTOR
@@ -91,13 +81,17 @@ initialize() {
 	initializeSLiMOptions(keepPedigrees= T, dimensionality= 'xy');
 	
 	// set up interaction models
-	// i1 is interaction competition between individuals
-	initializeInteractionType(1,"xy",reciprocal=T,maxDistance= INTERACTION_DISTANCE);
-	
+	// i1 is interaction competition between individuals for targets
+	initializeInteractionType(1,"xy",reciprocal=T,maxDistance= INTERACTION_DISTANCE);	
 	//i2 is mate search
 	initializeInteractionType(2,"xy",reciprocal=T,maxDistance= MATING_DISTANCE);
-
+	// i3 is competition distance for predators
+	initializeInteractionType(3,"xy",reciprocal=T,maxDistance= PREDATOR_INTERACTION_DIST);	
+	//i2 is mate search for predators
+	initializeInteractionType(4,"xy",reciprocal=T,maxDistance= PREDATOR_DIST);
+	
 	i1.setInteractionFunction("l", 1.0);
+	i3.setInteractionFunction("l", 1.0);
 	
 	
 	
@@ -108,6 +102,7 @@ initialize() {
 	r2 = initializeMutationType("m4", 0.5, "f", 0.0);
 	cut = initializeMutationType("m5", 0.5, "f", 0.0);
 	gap = initializeMutationType("m6", 0.5, "f", 0.0);
+   
 	mutations = c(wt,drive,r1,r2,cut,gap);
 	
 	mutations.mutationStackGroup = 1;
@@ -174,8 +169,9 @@ function (void)embryo(o<Genome>$ child_chromosome_1, o<Genome>$ child_chromosome
 	
 	if (!mother_drive_count)
 		return;
-	
-	if (HOMING_DRIVE & sum(mother.genomes.countOfMutationsOfType(m1) == NUM_gRNA) == 1)	
+	// Determine the per phase cut rate.
+	if (HOMING_DRIVE & sum(mother.genomes.countOfMutationsOfType(m1) == NUM_gRNA) == 1)
+		// Special case for homing drive individual that is dr/wt based on experimental data.	
 		cas_factor = 1.82;
 	
 	gRNA_factor = 1;
@@ -185,6 +181,7 @@ function (void)embryo(o<Genome>$ child_chromosome_1, o<Genome>$ child_chromosome
 	casCut(child_chromosome_1,per_phase_cut_rate);
 	casCut(child_chromosome_2,per_phase_cut_rate);
 }
+
 
 //// FUNCTION FOR CAS9 EFFECTS IN EMBRYO.
 function (void)male_deposition(o<Genome>$ child_chromosome_1, o<Genome>$ child_chromosome_2, o<Individual>$ father, f$ resistance_rate) {
@@ -243,6 +240,7 @@ function (void)hdr(o<Genome>$ chromosome, o<Individual>$ parent, f$ cut_rate) {
     // This model allows for varying rates of cutting at each locus.
     grna_factor = 1;
     cas_factor = 1;
+    
     cut_rate = HOMING_PHASE_CUT_RATE;
     // Vector of possible loci.
     wt_loci = chromosome.positionsOfMutationsOfType(m1);
@@ -269,7 +267,7 @@ function (void)hdr(o<Genome>$ chromosome, o<Individual>$ parent, f$ cut_rate) {
         rightmost_cut_index = rightmost_cut_index + sum(missing_loci > rightmost_cut_index);
         adjusted_right_index = NUM_gRNA - 1 - rightmost_cut_index;
 
-        // Rate of sucessfull homing varies depending on how well the gap matches the homology arm of the drive .
+        // Rate of sucessfull homing varies depending on how well the gap matches the homology arm of the drive.
         successful_homing_rate = BASELINE_HOMING_SUCCESS_RATE * (1 - HOMING_EDGE_EFFECT * adjusted_left_index) * (1 - HOMING_EDGE_EFFECT * adjusted_right_index);
 
         // Check to see if homing succeeds.
@@ -374,6 +372,7 @@ function (logical)isInfertile(o<Individual>$ ind) {
 	return F;
 }
 
+//Reproduction Rules 
 reproduction(NULL,"F") {
 	// Female has 20 attemp to find a mate	
 	attemp = 0;
@@ -383,8 +382,14 @@ reproduction(NULL,"F") {
 		return;
 	
 	// the male able be select from female
-	all_neighbors = i2.nearestNeighbors(individual,count=subpop.individualCount);
-	male = all_neighbors[ all_neighbors.sex == "M" & all_neighbors.tag == individual.tag];
+	if(individual.tag == 1){
+		all_neighbors = i2.nearestNeighbors(individual,subpop.individualCount);
+		neighbors = all_neighbors[all_neighbors.tag == 1];}
+	else {
+		all_neighbors = i4.nearestNeighbors(individual,subpop.individualCount);
+		neighbors = all_neighbors[all_neighbors.tag == 2];}
+	
+	male = neighbors[neighbors.sex == "M"];
 	
 	//if no male around female stop matching
 	if (size(male) == 0)
@@ -412,69 +417,53 @@ reproduction(NULL,"F") {
 	if (selected_mate.countOfMutationsOfType(m1) & selected_mate.countOfMutationsOfType(m2))
 		mate_somatic_offspring_multiplier = SOMATIC_FITNESS_MUTLIPLIER_M;
 	
-	INTRASPECIFIC_competition_factor = 1;
-	// Check the INTRASPECIFIC competition condition
-	if (DIFFERENT_INTRASPECIFIC_COMPETITION){
-			if(individual.tag == 1){
-				INTRASPECIFIC_competition_factor = INTRASPECIFIC_COMPETITION_FACTOR_A ;
-			}
-			else{
-				INTRASPECIFIC_competition_factor = INTRASPECIFIC_COMPETITION_FACTOR_B;
-			}
-	}
-	
-	// Check wheather is Symmetric interspecific competition
-	if (ASYMMETRIC_INTERSPECIFIC_COMPETITION){
-		if (individual.tag == 1){
-			INTERSPECIFIC_competition_factor = INTERSPECIFIC_COMPETITION_FACTOR_B;
-		}
-		else{
-			INTERSPECIFIC_competition_factor = INTERSPECIFIC_COMPETITION_FACTOR_A;
-		}
-	}
-	else {
-	    INTERSPECIFIC_competition_factor = INTERSPECIFIC_COMP_FACTOR;
-	}
-	
-	////competition happended here
-	all_neighbor = i1.nearestNeighbors(individual, subpop.individualCount);        
-	if (individual.tag == 1){
-		INTRASPECIFIC_competition_neighbor = all_neighbor[all_neighbor.tag == 1];
-		INTERSPECIFIC_competition_neighbor = all_neighbor[all_neighbor.tag == 2];
-		INTRASPECIFIC_competition = sum(i1.strength(individual,INTRASPECIFIC_competition_neighbor));
-		INTERSPECIFIC_competition = sum(i1.strength(individual,INTERSPECIFIC_competition_neighbor));
-		adult_competition = INTRASPECIFIC_competition * INTRASPECIFIC_competition_factor + INTERSPECIFIC_competition * INTERSPECIFIC_competition_factor;
-		competition_ratio_A = adult_competition/EXPECTED_COMPETITION_RATIO_A;
-		actual_competition_ratio = LOW_DENSITY_GROW_RATE / ((LOW_DENSITY_GROW_RATE-1) * competition_ratio_A + 1);}
-	else{
-		INTRASPECIFIC_competition_neighbor = all_neighbor[all_neighbor.tag == 2];
-		INTERSPECIFIC_competition_neighbor = all_neighbor[all_neighbor.tag == 1];
-		INTRASPECIFIC_competition = sum(i1.strength(individual,INTRASPECIFIC_competition_neighbor));
-		INTERSPECIFIC_competition = sum(i1.strength(individual,INTERSPECIFIC_competition_neighbor));
+	////competition happended here	
+	if (individual.tag == 1){ //target species (prey)
+
+	   intraspecies = i1.nearestNeighbors(individual, subpop.individualCount);
+	   intraspecies = intraspecies[intraspecies.tag == 1];
+	   interspecies = i3.nearestNeighbors(individual, subpop.individualCount);
+	   interspecies = interspecies[interspecies.tag == 2];	   
+		intraspecies_competition = sum(i1.strength(individual,intraspecies));
+		interspecies_competition = sum(i3.strength(individual,interspecies));
 		
-		adult_competition = INTRASPECIFIC_competition * INTRASPECIFIC_competition_factor + INTERSPECIFIC_competition * INTERSPECIFIC_competition_factor;
-		competition_ratio_B = adult_competition/EXPECTED_COMPETITION_RATIO_B;
-		actual_competition_ratio = LOW_DENSITY_GROW_RATE / ((LOW_DENSITY_GROW_RATE-1) * competition_ratio_B + 1);}
+		adult_competition = intraspecies_competition + PREDATION_INTENSITY * interspecies_competition;
+		competition_ratio = adult_competition / PREY_EXPECTED_COMPETITION;
+		actual_competition_ratio = LOW_DENSITY_GROW_RATE / ((LOW_DENSITY_GROW_RATE-1) * competition_ratio + 1);}
+	else{ //predators
+
+		intraspecies = i3.nearestNeighbors(individual, subpop.individualCount);
+		intraspecies = intraspecies[intraspecies.tag == 2];
+		interspecies = i3.nearestNeighbors(individual, subpop.individualCount);
+		interspecies = interspecies[interspecies.tag == 1];
+		predator_intraspecies_competition = sum(i3.strength(individual,intraspecies));
+		interspecies_competition = sum(i3.strength(individual,interspecies));
+		
+		adult_competition = predator_intraspecies_competition / (interspecies_competition * PREDATOR_RESOURCE_FRACTION + 1/3 * PI * PREDATOR_INTERACTION_DIST^2 * TARGET_SPECIES_SIZE *(1 - PREDATOR_RESOURCE_FRACTION) + 0.000001);
+		competition_ratio = adult_competition/PREDATOR_EXPECTED_COMPETITION;
+		actual_competition_ratio = PREDATOR_GROWTH_RATE / ((PREDATOR_GROWTH_RATE-1) * competition_ratio + 1);}
 	
 	//Offspring number based on binomial distribution.
 	// p for binomial draw. Number of offspring varies with female genes and competition.
 	p = mate_somatic_offspring_multiplier * genotypeFitness(individual) * actual_competition_ratio * 0.04 / (1 + RATE_FEMALES_SURVIVE);
-	num_offspring = rbinom(1,50,p);      //draw from a binomial distribution
-	
+	num_offspring = rbinom(1,50,p);     
 	for (i in seqLen(num_offspring)){
 		//add offspring to the subpopulation
 		offspring = subpop.addCrossed(individual,selected_mate);
 		offspring.tag = individual.tag;
 		if (!isNULL(offspring)){
-			do pos = individual.spatialPosition + rnorm(2,0,MIGRATION_RATE);
-			while(!individual.subpopulation.pointInBounds(pos));
-			offspring.setSpatialPosition(pos);
+			if(offspring.tag == 1){
+				do pos = individual.spatialPosition + rnorm(2,0,MIGRATION_RATE);
+				while(!individual.subpopulation.pointInBounds(pos));
+				offspring.setSpatialPosition(pos);}
+			else{
+				do pos = individual.spatialPosition + rnorm(2,0,PREDATOR_DIST);
+				while(!individual.subpopulation.pointInBounds(pos));
+				offspring.setSpatialPosition(pos);			
+			}
 		}
-	}
-	
+	}	
 }
-
-
 
 //// GENE DRIVE IMPLEMENTATION RULES THAT OCCUR IN EVERY CHILD.
 1: modifyChild(){
@@ -484,7 +473,8 @@ reproduction(NULL,"F") {
 	germline(childGenome2,parent2,GERMLINE_RESISTANCE_RATE);
 	hdr(childGenome1,parent1,HOMING_PHASE_CUT_RATE); 
 	hdr(childGenome2,parent2,HOMING_PHASE_CUT_RATE);
-	germline(childGenome1,parent1,LATE_GERMLINE_RESISTANCE_CUT_RATE); 	   germline(childGenome2,parent2,LATE_GERMLINE_RESISTANCE_CUT_RATE);
+	germline(childGenome1,parent1,LATE_GERMLINE_RESISTANCE_CUT_RATE);
+	germline(childGenome2,parent2,LATE_GERMLINE_RESISTANCE_CUT_RATE);
 	
 	//drive actitvity in embryo stage
 	embryo(childGenome1,childGenome2,parent1, EMBRYO_RESISTANCE_RATE);
@@ -515,13 +505,15 @@ early() {
 late() {
 	i1.evaluate();
 	i2.evaluate();
+	i3.evaluate();
+	i4.evaluate();
 }
 
 // surviving rule for all individual
 late() {
 	all = sim.subpopulations.individuals;
 	male = all.sex == "M";
-	all[male] .fitnessScaling = 0.0;
+	all[male].fitnessScaling = 0.0;
 	female = all[!male];
 	female.fitnessScaling = 0.0;
 	
@@ -535,10 +527,15 @@ late() {
 	
 	//surviving individual moving 
 	for (i in survive_ind){
-		
-		do pos = i.spatialPosition + rnorm(2,0,MIGRATION_RATE);
-		while(!i.subpopulation.pointInBounds(pos));
-		i.setSpatialPosition(pos);
+		if(i.tag == 1){
+			do pos = i.spatialPosition + rnorm(2,0,MIGRATION_RATE);
+			while(!i.subpopulation.pointInBounds(pos));
+			i.setSpatialPosition(pos);
+		}else{
+			do pos = i.spatialPosition + rnorm(2,0,PREDATOR_DIST);
+			while(!i.subpopulation.pointInBounds(pos));
+			i.setSpatialPosition(pos);
+		}
 	}
 }
 
@@ -547,29 +544,29 @@ late() {
 1 {
 	// add population p1 with all wt allele [1 : target population]
 	sim.addSubpop("p1",TARGET_SPECIES_SIZE);
-	all = p1.individuals;
-	all.genomes.addNewDrawnMutation(m1,seqLen(NUM_gRNA));
+	prey = p1.individuals;
+	prey.genomes.addNewDrawnMutation(m1,seqLen(NUM_gRNA));
 	// add tag 1 : Target species
-	all.tag = 1;
+	prey.tag = 1;
 	
-	// set individuals position randomly
-	all.x = runif(TARGET_SPECIES_SIZE);
-	all.y = runif(TARGET_SPECIES_SIZE);
-	
+
 	// add another competiting species population p2 [ 2 : competing species]
-	sim.addSubpop("p2",asInteger(COMPETITING_SPECIES_SIZE));
-	//sim.addSubpop("p2",asInteger(10000 / (1 + INTERSPECIFIC_COMPETITION_FACTOR_A)));
-	competing_species = p2.individuals;
+	sim.addSubpop("p2",PREDATOR_SIZE);
+	predator = p2.individuals;
 	// add tag 2 : competiting species
-	competing_species.tag = 2;
+	predator.tag = 2;
 	
-	p1.takeMigrants(competing_species);
+	p1.takeMigrants(predator);
+	p2.removeSubpopulation();
 	
-	// set individuals position randomly
-	competing_species.x = runif(asInteger(COMPETITING_SPECIES_SIZE));
-	competing_species.y = runif(asInteger(COMPETITING_SPECIES_SIZE));
+	// set individuals position randomly	
+	all = p1.individuals;
+	all.x = runif(p1.individualCount, 0, 1);
+	all.y = runif(p1.individualCount, 0, 1);
+	
 	sim.setValue("track_eq", NULL);
 	
+	//sim.setValue("npops", 1);  // track number of subpopulations
 }
 
 
@@ -587,6 +584,7 @@ late() {
 	
 	// add drop_ind into p1
 	p1.takeMigrants(drop_ind);
+	p3.removeSubpopulation();
 	
 	// circle drop pattern
 	drop_ind.x = 0.5 + rnorm(DROP_SIZE, 0, DROP_DISTANCE);
@@ -595,6 +593,18 @@ late() {
 	sim.setValue("start_gc_tracking", F);
 }
 
+
+1: late(){
+   all = sim.subpopulations.individuals;
+	species_A = all[all.tag == 1];
+	species_B = all[all.tag == 2];
+	pop_size = length(all);
+	popA = length(species_A); //number of species A
+	popB = length(species_B);
+	catn("ALL:: " + pop_size);
+	catn("POP_SPECIES_A:: " + popA);
+	catn("POP_SPECIES_B:: " + popB);
+}
 
 //// PROGRAM OUTPUT AFTER DROP ///all things need to be focused on species 1
 10: late() {
@@ -616,7 +626,8 @@ late() {
 	num_females = length(females);
 	num_fertile_females = sum(females.countOfMutationsOfType(m1)>0 | females.countOfMutationsOfType(m3)>0);
 	catn("FERTILE_FEMALES:: " + num_fertile_females);
-	
+	catn("M::" + num_males + "F:: " + num_females );
+	catn("ALL:: " + pop_size);
 	catn("POP_SPECIES_A:: " + popA);
 	catn("POP_SPECIES_B:: " + popB);
 	
