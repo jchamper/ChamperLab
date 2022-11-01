@@ -1,0 +1,202 @@
+initialize() { 
+    // Ecology and drop parameters:
+    defineConstant("CAPACITY", 100000);
+	 defineCfgParam("INTRODUCTION",0.025);
+	 defineCfgParam("LOW_DENSITY_GROWTH_RATE",6.0);
+	
+	 defineConstant("DROP_SIZE",asInteger(INTRODUCTION*CAPACITY/(1-INTRODUCTION)));
+   
+ 	 //Below are dimensioal sets.
+	 defineConstant("DENSITY_INTERACTION_DISTANCE", 0.01);
+	 defineConstant("EXPECTED_ADULT_COMPETITION", CAPACITY *DENSITY_INTERACTION_DISTANCE);
+
+
+    // Fitness parameters:
+    defineCfgParam("DD_FITNESS_VALUE", 1.0);
+    
+    //Special parameters for this gene drive:
+	 defineCfgParam("Control_X",1.0);
+	 defineCfgParam("Control_Y",0.0);
+
+    // For mortality rate as a function of age:
+    // Model can be set to allow females to overlap generations.
+    defineConstant("RATE_FEMALES_SURVIVE", 0.0);
+
+    // This simulation will use a non-Wright-Fisher model.
+    initializeSLiMModelType("nonWF");
+
+ 	 // This simulation will take place across continuous space.
+
+    // Four variations: Wild type, drive, r1 resistance, r2 resistance.
+    wt = initializeMutationType("m1", 0.5, "f", 0.0);
+    dr = initializeMutationType("m2", 0.5, "f", 0.0);
+    r1 = initializeMutationType("m3", 0.5, "f", 0.0);
+    r2 = initializeMutationType("m4", 0.5, "f", 0.0);
+
+    variations = c(wt, dr, r1, r2);
+
+    // Variations are all part of g1 genome element.
+    initializeGenomicElementType("g1", variations, c(1, 1, 1, 1));
+
+    // Element is NUM_GRNAS long, each spot on the element representing a GRNA target location.
+    initializeGenomicElement(g1, 0,0);
+
+    // These variations overwrite one another.
+    variations.mutationStackPolicy = "l";
+    variations.mutationStackGroup = 1;
+
+    // No mutation in this model.
+    initializeMutationRate(0.0);
+    initializeRecombinationRate(0.0);
+
+    // Simulate sexual reproduction: A for autosome.
+    initializeSex("A");
+}
+
+function (void) defineCfgParam(string$ name, lifs value) {
+    if (!exists(name))
+        defineConstant(name, value);
+}
+
+//// SURVIVAL RULES FOR THE SIMULATION BASED ON AGE
+late() {
+	all = sim.subpopulations.individuals;
+	
+	//Males don't live past one generation
+	all[all.sex=="M"].fitnessScaling = 0.0;
+	
+	//Females may survive to the next generation at the specified rate
+	females = all[all.sex=="F"];
+	females[females.age > 0].fitnessScaling = 0.0;
+	females[females.age==0].fitnessScaling = RATE_FEMALES_SURVIVE;
+	surviving_inds = all[all.fitnessScaling > 0.0];	
+}
+
+//// RULES FOR FITNESS BASED ON GENOTYPE.
+function (f$)genotypeFitness(o<Individual>$ ind) {
+    // Representation of the value of the two chromosomes.
+    fitness_value = 1.0;
+	 if (ind.tagF == 1.0)
+	 	fitness_value = DD_FITNESS_VALUE;
+    return fitness_value;
+}
+
+
+//// REPRODUCTION RULES FOR EACH FEMALE.
+reproduction(NULL, "F") {
+    attempt_no = 0;
+    while (1) {
+        // First, select a random potential mate.
+        selected_mate = subpop.sampleIndividuals(1, sex="M");
+        if (!selected_mate.size())
+            return;  // No available mates.
+
+        // Determine attractiveness of potential mate.
+        mate_attractiveness = genotypeFitness(selected_mate);
+
+        // Determine if this mate is chosen, based on attractiveness.
+        if (runif(1) < mate_attractiveness)
+            break;  // Select this mate.
+        // After ten candidates fail, female gives up.
+        attempt_no = attempt_no + 1;
+        if (attempt_no == 9)
+            return;
+    }
+    // Mate has now been selected.
+
+    // Fecundity is based on both the crowding/competition in the system, as well as female fitness.
+    // Number of offspring number based on binomial distrobution.
+    capacity_fitness_scaling = LOW_DENSITY_GROWTH_RATE / (((LOW_DENSITY_GROWTH_RATE - 1) * p1.individualCount / CAPACITY) + 1);
+    p = genotypeFitness(individual) * capacity_fitness_scaling * 2 / 50 / (1 + RATE_FEMALES_SURVIVE);
+    num_offspring = rbinom(1, 50, p);
+    if(selected_mate.tagF == 1.0 & individual.tagF == 1.0){
+	    carrier_offspring = asInteger(Control_X*num_offspring);
+	    wt_offspring = num_offspring - carrier_offspring;
+    }
+    if(selected_mate.tagF == 0.0 & individual.tagF == 1.0){
+	    carrier_offspring = asInteger(Control_X*num_offspring);
+	    wt_offspring = num_offspring - carrier_offspring;
+    }
+    if(selected_mate.tagF == 1.0 & individual.tagF == 0.0){
+	    carrier_offspring = 0;
+	    wt_offspring = asInteger(Control_Y*num_offspring);
+    }
+    if(selected_mate.tagF == 0.0 & individual.tagF == 0.0){
+	    carrier_offspring = 0;
+	    wt_offspring = num_offspring;
+    }
+    if(num_offspring == 0)
+	 	 return;
+	 if (carrier_offspring != 0){
+   	 for (i in seqLen(carrier_offspring)) {
+        	 // Add offspring to the subpopulation.
+      	 offspring = subpop.addCrossed(individual, selected_mate);
+	  		 offspring.tagF = 1.0;
+    	 }
+     }
+    if (wt_offspring != 0){
+	    for (i in seqLen(wt_offspring)) {
+         // Add offspring to the subpopulation.
+      	 offspring = subpop.addCrossed(individual, selected_mate);
+	   	 offspring.tagF = 0.0;
+     }
+    }
+}
+
+
+//// START THE SIMULATION BY ADDING AN INITIAL WILD POPULATION.
+1 {
+	// Start with a population of wild type flies.
+	sim.addSubpop("p1", CAPACITY);
+	all= p1.individuals;
+	all.tagF = 0.0;
+}
+
+//// DROP A GROUP OF MODIFIED INDIVIDUALS INTO THE POPULATION.
+10 {
+    // Add a drop of modified individuals to p1.
+    sim.addSubpop("p2", DROP_SIZE);
+    drop = p2.individuals;
+	 drop.tagF = 1.0;
+    p1.takeMigrants(drop);
+    p2.removeSubpopulation();
+}
+
+//// PROGRAM OUTPUT.
+10:late() {
+    // Calculate rates that we are intersted in:
+   all = sim.subpopulations.individuals;
+	this_gen=sim.generation-10;
+	pop_size = size(all);
+   num_dr = size(all[all.tagF == 1.0]);
+   rate_dr = num_dr/size(all);
+   num_wt = size(all[all.tagF == 0.0]);
+   rate_wt = num_wt/size(all);
+	this_gen = sim.generation - 10;
+	if(this_gen == 0){
+		catn("Special_Generation:"+this_gen);
+		catn("Special_Pop_size:"+pop_size);
+		catn("Special_Drive_Allele_Gene_Frequency:"+rate_dr);
+		catn("Special_Num_Drive_Gene:"+num_dr);
+		catn("Special_Wild_Type_Gene_Frequency:"+rate_wt);
+		catn("Special_Num_Wild_Gene:"+num_wt);
+	}else{
+		catn("Generation:"+this_gen);
+		catn("Pop_size:"+pop_size);
+		catn("Drive_Allele_Gene_Frequency:"+rate_dr);
+		catn("Num_Drive_Gene:"+num_dr);
+		catn("Wild_Type_Gene_Frequency:"+rate_wt);
+		catn("Num_Wild_Gene:"+num_wt);
+	}
+}
+
+//// PROGRAM END CONDITION.
+110 late() {
+		catn("Generation:NAN");
+		catn("Pop_size:NAN");
+		catn("Drive_Allele_Gene_Frequency:NAN");
+		catn("Num_Drive_Gene:NAN");
+		catn("Wild_Type_Gene_Frequency:NAN");
+		catn("Num_Wild_Gene:NAN");
+    	sim.simulationFinished();
+}

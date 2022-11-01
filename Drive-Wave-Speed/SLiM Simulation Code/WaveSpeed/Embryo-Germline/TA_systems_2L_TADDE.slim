@@ -1,0 +1,1325 @@
+// Author: Sam Champer.
+// Created in association with Jackson Champer and the Messer lab.
+
+// A framework for simulating many different gene drives
+// with varying parameters, intended to be configured by
+// alterning the heading below.
+
+initialize() {
+    // Fitness parameters:
+    defineConstant("DRIVE_FITNESS_VALUE", 1.0);
+    defineConstant("R2_FITNESS_VALUE", 1.0);
+
+    // Drive type:
+    defineConstant("MUTUAL_TARGETING_DRIVE", T);  // Drive at x targets x+1. Drive at extreme targets site 0.
+    defineConstant("SELF_TARGETING_DRIVE", F);  // Drive cuts at the same site.normal situation
+    defineConstant("SITE_ZERO_NON_TARGETED", F);  // There are NUM_LOCI - 1 total drives. Drive at zero is not a resistance target.
+    defineConstant("SITE_ZERO_RECESSIVE_FEMALE_STERILE", F);  // Drive at locus zero targets female recessive sterility.
+    defineConstant("SITE_ZERO_RECESSIVE_MALE_STERILE", F);  // Drive at locus zero targets male recessive sterility.
+    defineConstant("DOUBLE_TOXINS", F);  // Two toxins sharing a locus, e.g. 1L2T.
+    defineConstant("STERILE_MALE", F);  // Not actually a drive.
+
+    // General drive parameters:
+    defineConstant("NUM_COMPONENT_DRIVES", 2);//KIND OR NUMBER?
+    defineConstant("X_LINKED", F);
+    defineConstant("MALE_ONLY_PROMOTER", F);
+
+    // Resistance effects:
+    defineConstant("TADE_LETHAL", F);
+    defineConstant("TARE_LETHAL", F);
+    defineConstant("TADDE_LETHAL", T);
+    defineConstant("TAHRE_LETHAL", F);//The rules for your basic drives
+    defineConstant("FEMALE_TADE_STERILE", F);  // These sterile resistance versions are not assessed in the manuscript.
+    defineConstant("FEMALE_TARE_STERILE", F);
+    defineConstant("FEMALE_TADDE_STERILE", F);
+    defineConstant("FEMALE_TAHRE_STERILE", F);
+    defineConstant("MALE_TADE_STERILE", F);
+    defineConstant("MALE_TARE_STERILE", F);
+    defineConstant("MALE_TADDE_STERILE", F);
+    defineConstant("MALE_TAHRE_STERILE", F);
+    defineConstant("TADIL", F);  // Drive is viabile, but individuals incur a fitness penalty.
+    defineConstant("TARIL", F);
+    defineConstant("TADDIL", F);
+    defineConstant("TAHRIL", F);
+    defineConstant("TA_RESISTANCE_FITNESS_MULTIPLIER", 1.0);
+    defineConstant("ADDL_FEMALE_FERTILITY_TARGET", F);  // For same site alternative constructions of suppression drives.
+
+    // Resistance phase parameters:
+	 defineCfgParam("EMBRYO_RESISTANCE_RATE", 0.00);
+	 defineCfgParam("GERMLINE_RESISTANCE_RATE", 0.50);
+    defineConstant("LEAKY_SOMATIC_EXPRESSION", F);
+    defineConstant("R1_OCCURRENCE_RATE", 0.0);
+
+    // Drop parameters:
+    defineConstant("CAPACITY", 10000);
+    defineConstant("DROP_SIZE", 1000);
+    defineConstant("DROP_PERCENTAGE_OVERRIDE", 0.0);  // Overrides DROP_SIZE unless set to zero.
+    defineConstant("DROP_ADDS_TO_POP", T);  // If T, the drop is added to the population, rather than overwriting preexisting individuals.
+    defineConstant("MUTLIPLE_DROPS", F);
+    defineConstant("DROP_INTERVAL", 0);  // If multiple drops.
+    defineConstant("MAX_NUMBER_OF_DROPS", 0);  // No maximum if zero.
+    defineConstant("MALE_ONLY_DROP", F);
+    defineConstant("FEMALE_ONLY_DROP", F);
+    defineConstant("HETEROZYGOUS_DROP", F);
+
+    // Ecology parameters:
+    defineConstant("MAX_ATTEMPTS_TO_FIND_SUITABLE_MATE", 20);
+    defineConstant("LOW_DENSITY_GROWTH_RATE", 6);
+    defineConstant("MAX_OFFSPRING", 50);
+    defineConstant("RATE_FEMALES_SURVIVE", 0.0);  // For partially overlapping generations.
+    // End configuration variables.
+
+    // For mortality rate as a function of age, for runs with overlaping generations.
+    // Some females may be allowed to survive two generations:
+    defineConstant("MALE_MORTALITY", c(1.0));
+    defineConstant("FEMALE_MORTALITY", c((1.0 - RATE_FEMALES_SURVIVE), 1.0));
+    
+	//Below are dimensioal sets.
+	defineConstant("REPRISING_BOUNDARIES", T);
+	defineConstant("DENSITY_INTERACTION_DISTANCE", 0.01);
+	defineConstant("DROP_RADIUS", 0.1);
+	defineConstant("SPEED", 0.04);
+	defineConstant("FEMALE_SPEED", SPEED);
+	defineConstant("MATING_DISTANCE", SPEED);
+	defineConstant("EXPECTED_ADULT_COMPETITION", CAPACITY*DENSITY_INTERACTION_DISTANCE);
+	defineCfgParam("GROWTH_AT_ZERO_DENSITY",6.00);
+	defineConstant("ONE_DIMENSIONAL",T);
+	defineConstant("BAR",0.5); 
+    
+    
+    // Number of relevant genetic loci based on drive architecture and number of component drives.
+    if (SITE_ZERO_NON_TARGETED)
+        defineConstant("NUM_LOCI", NUM_COMPONENT_DRIVES + 1);
+    else if (DOUBLE_TOXINS)
+        defineConstant("NUM_LOCI", NUM_COMPONENT_DRIVES + 1);
+    else
+        defineConstant("NUM_LOCI", NUM_COMPONENT_DRIVES);
+    if ((DOUBLE_TOXINS | MUTUAL_TARGETING_DRIVE) & NUM_COMPONENT_DRIVES < 2) {
+        print("\n\nDouble Toxin and mutual targeting architectures require more than one component drive.\n\n");
+        return;
+    }
+
+    // This simulation will use a non-Wright-Fisher model.
+    initializeSLiMModelType("nonWF");
+    
+	 // This simulation will take place across continuous space.
+	 if (ONE_DIMENSIONAL) {
+		 if (REPRISING_BOUNDARIES)
+			 initializeSLiMOptions(keepPedigrees = T, dimensionality = "x"); //for 1-D
+		 else
+			 initializeSLiMOptions(keepPedigrees=T, dimensionality="x", periodicity="x");
+		
+		 initializeInteractionType(1, "x", reciprocal=T, maxDistance=MATING_DISTANCE);
+		 initializeInteractionType(2, "x", reciprocal=T,  maxDistance=DENSITY_INTERACTION_DISTANCE);
+	 }
+
+    // Four variations: Wild type, drive, r1 resistance, r2 resistance.
+    // 'cut' is a temporary placeholder, and 'gap' represents a missing segment.
+    wt = initializeMutationType("m1", 0.5, "f", 0.0);
+    dr = initializeMutationType("m2", 0.5, "f", 0.0);
+    r1 = initializeMutationType("m3", 0.5, "f", 0.0);
+    r2 = initializeMutationType("m4", 0.5, "f", 0.0);
+    d2 = initializeMutationType("m5", 0.5, "f", 0.0);
+    variations = c(wt, dr, r1, r2, d2);
+
+    // Variations are all part of g1 genome element.
+    initializeGenomicElementType("g1", variations, c(1, 1, 1, 1, 1));
+
+    // Element is NUM_LOCI long, each spot on the element representing a drive location.
+    if (ADDL_FEMALE_FERTILITY_TARGET)
+        initializeGenomicElement(g1, 0, NUM_LOCI);
+    else
+        initializeGenomicElement(g1, 0, NUM_LOCI - 1);
+
+
+    // These variations overwrite one another.
+    variations.mutationStackPolicy = "l";
+    variations.mutationStackGroup = 1;
+
+    // No mutation in this model.
+    initializeMutationRate(0.0);
+
+    // All sites are independent.
+    initializeRecombinationRate(0.5);
+
+    // Simulate sexual reproduction: A for autosome.
+    initializeSex("A");
+}
+
+function (void) defineCfgParam(string$ name, lifs value) {
+    if (!exists(name))
+        defineConstant(name, value);
+}
+
+
+//// HELPER FUNCTION FOR FORMING A RESISTANCE ALLELE AT A GIVEN LOCUS.
+function (void)addResistanceAllele(o<Genome>$ genome, i$ locus) {
+    // Resistance alleles form at a specified rate.
+    // m3 is R1 allele, m4 is R2.
+    if(runif(1) < R1_OCCURRENCE_RATE)
+        genome.addNewDrawnMutation(m3, locus);
+    else
+        genome.addNewDrawnMutation(m4, locus);
+}
+
+//// FUNCTION FOR CAS9 EFFECTS IN THE GERMLINE AND EMBRYO.
+function (void)driveResistance(o<Genome>$ child_chromosome, o<Individual>$ parent, f$ resistance_rate) {
+    // If parent doesn't have drive allele, nothing happens.
+    if (!sum(parent.genomes.countOfMutationsOfType(m2)) & !sum(parent.genomes.countOfMutationsOfType(m5)))
+        return;
+
+    // Child must be inheritting wt to cut, or nothing happens.
+    if (!child_chromosome.countOfMutationsOfType(m1))
+        return;
+
+    // The wt loci the child is inheriting, and the drive loci of the parent:
+    wt_loci = child_chromosome.positionsOfMutationsOfType(m1);
+    dr_loci = parent.genomes.positionsOfMutationsOfType(m2);
+
+    // With mutual targeting drive, drive at site x targets site x+1. The drive at NUM_LOCI targets site 0.
+    if (MUTUAL_TARGETING_DRIVE)
+        for (i in seqAlong(wt_loci))
+            for (j in seqAlong(dr_loci))
+                if (wt_loci[i] == (dr_loci[j] + 1) % NUM_LOCI)
+                    if (runif(1) < resistance_rate)
+                        addResistanceAllele(child_chromosome, wt_loci[i]);
+
+    // Drive at x causes resistance at wt at x.
+    if (SELF_TARGETING_DRIVE)
+        for (i in seqAlong(wt_loci))
+            for (j in seqAlong(dr_loci))
+                if (wt_loci[i] == dr_loci[j])
+                    if (runif(1) < resistance_rate)
+                        addResistanceAllele(child_chromosome, wt_loci[i]);
+
+    // Drive at site x (x<NUM_LOCI) targets site x+1.
+    // There is not drive at NUM_LOCI, and consequently no drive causes resistance at site 0.
+    if (SITE_ZERO_NON_TARGETED)
+        for (i in seqAlong(wt_loci))
+            for (j in seqAlong(dr_loci))
+                if (wt_loci[i] == dr_loci[j] + 1)
+                    if (runif(1) < resistance_rate)
+                        addResistanceAllele(child_chromosome, wt_loci[i]);
+
+    if (DOUBLE_TOXINS) {
+        dr2_loci = parent.genomes.positionsOfMutationsOfType(m5);
+        for (i in seqAlong(wt_loci)) {
+            for (j in seqAlong(dr_loci))
+                if (wt_loci[i] == dr_loci[j] + 1)
+                    if (runif(1) < resistance_rate)
+                        addResistanceAllele(child_chromosome, wt_loci[i]);
+            for (j in seqAlong(dr2_loci))
+                if (wt_loci[i] == dr2_loci[j] + 2)
+                    if (runif(1) < resistance_rate)
+                        addResistanceAllele(child_chromosome, wt_loci[i]);
+        }
+    }
+
+    // Add resistance at locus reserved for an unrescued recessive fertility target.
+    if (ADDL_FEMALE_FERTILITY_TARGET)
+        if (dr_loci[0] == 0)
+            if (runif(1) < resistance_rate)
+                addResistanceAllele(child_chromosome, NUM_LOCI);
+}
+
+//// HELPER FUNCTION TO OVERWRITE ONE GENOME WITH ANOTHER.
+function (void)copy_genome(o<Genome>$ source, o<Genome>$ destination) {
+    m1_loci = source.positionsOfMutationsOfType(m1);
+    m2_loci = source.positionsOfMutationsOfType(m2);
+    m3_loci = source.positionsOfMutationsOfType(m3);
+    m4_loci = source.positionsOfMutationsOfType(m4);
+    for (i in seqAlong(m1_loci))
+        destination.addNewDrawnMutation(m1, m1_loci[i]);
+    for (i in seqAlong(m2_loci))
+        destination.addNewDrawnMutation(m2, m2_loci[i]);
+    for (i in seqAlong(m3_loci))
+        destination.addNewDrawnMutation(m3, m3_loci[i]);
+    for (i in seqAlong(m4_loci))
+        destination.addNewDrawnMutation(m4, m4_loci[i]);
+}
+
+//// GENE DRIVE IMPLEMENTATION RULES THAT OCCUR IN EVERY CHILD.
+1: modifyChild() {
+    // If the drive is x-linked, prevent it from being inherited on Y chromosome:
+    if (X_LINKED) {
+        if(child.sex == "M")
+            copy_genome(parent2Genome2, child.genome2);
+        if(child.sex == "F")
+            copy_genome(parent2Genome1, child.genome2);
+    }
+
+    // Apply effects that happen in the germline.
+    if (!MALE_ONLY_PROMOTER)
+        driveResistance(childGenome1, parent1, GERMLINE_RESISTANCE_RATE);
+    driveResistance(childGenome2, parent2, GERMLINE_RESISTANCE_RATE);
+
+    // Apply effects that happen in the embryo.
+    if (!MALE_ONLY_PROMOTER) {
+        driveResistance(childGenome1, parent1, EMBRYO_RESISTANCE_RATE);
+        driveResistance(childGenome2, parent1, EMBRYO_RESISTANCE_RATE);
+    }
+
+    // If the drive is x-linked, prevent gene drive mechanics on Y chromosome by resetting it:
+    if (X_LINKED)
+        if(child.sex == "M")
+            copy_genome(parent2Genome2, child.genome2);
+
+    // Resistance alleles can have the affect of rendering offspring non-viable with many of these systems.
+    // With SITE_ZERO_NON_TARGETED systems, two copies of the drive at site zero provides rescue for site at NUM_LOCI.
+    c1_res = childGenome1.positionsOfMutationsOfType(m4);
+    c2_res = childGenome2.positionsOfMutationsOfType(m4);
+    c1_dr = childGenome1.positionsOfMutationsOfType(m2);
+    c2_dr = childGenome2.positionsOfMutationsOfType(m2);
+
+    if (ADDL_FEMALE_FERTILITY_TARGET) {
+        c1_res = setDifference(c1_res, NUM_LOCI);
+        c2_res = setDifference(c2_res, NUM_LOCI);
+    }
+
+    if (LEAKY_SOMATIC_EXPRESSION) {
+        // Cas9 expression in the embryo results in toxic effect where inherited drive disrupts inherited wt.
+        c1_wt = childGenome1.positionsOfMutationsOfType(m1);
+        c2_wt = childGenome2.positionsOfMutationsOfType(m1);
+        new_c1_res = setIntersection(c2_dr, c1_wt);
+        new_c2_res = setIntersection(c1_dr, c2_wt);
+        c1_res = setUnion(c1_res, new_c1_res);
+        c2_res = setUnion(c2_res, new_c2_res);
+    }
+
+    // For systems with multiple toxins possible at a locus.
+    if (DOUBLE_TOXINS) {
+        c1_dr = c1_dr + 2;  // Drive 1 at site x cuts at site x + 1 and rescues site x + 2.
+        c2_dr = c2_dr + 2;
+        c1_dr2 = childGenome1.positionsOfMutationsOfType(m5) + 1;  // Drive 2 at site x cuts at site x + 2 and rescues site x + 1.
+        c2_dr2 = childGenome2.positionsOfMutationsOfType(m5) + 1;
+        if (TADE_LETHAL) {
+            double_d1_rescue = setIntersection(c1_dr, c2_dr);
+            double_d2_rescue = setIntersection(c1_dr2, c2_dr2);
+            double_res = setIntersection(c1_res, c2_res);
+            unrescued_double_res = setDifference(setDifference(double_res, double_d1_rescue), double_d2_rescue);
+            unrescued_single_c1 = setDifference(setDifference(setDifference(setDifference(c1_res, c1_dr), c1_dr2), c2_dr), c2_dr2);
+            unrescued_single_c2 = setDifference(setDifference(setDifference(setDifference(c2_res, c1_dr), c1_dr2), c2_dr), c2_dr2);
+            if (size(unrescued_double_res) | size(unrescued_single_c1) | size(unrescued_single_c2))
+                return F;
+        }
+        if (TADDE_LETHAL) {
+            combined_res_loci = setUnion(c1_res, c2_res);
+            unrescued = setDifference(setDifference(setDifference(setDifference(combined_res_loci, c1_dr), c1_dr2), c2_dr), c2_dr2);
+            if (size(unrescued))
+                return F;
+        }
+        if (TARE_LETHAL) {
+            double_res = setIntersection(c1_res, c2_res);
+            unrescued = setDifference(setDifference(setDifference(setDifference(double_res, c1_dr), c1_dr2), c2_dr), c2_dr2);
+            if (size(unrescued))
+                return F;
+        }
+        if (TAHRE_LETHAL) {
+            double_res = setIntersection(c1_res, c2_res);
+            d1_rescue = setIntersection(c1_dr, c2_dr);
+            d2_rescue = setIntersection(c1_dr2, c2_dr2);
+            unrescued = setDifference(setDifference(double_res, d1_rescue), d2_rescue);
+            if (size(unrescued))
+                return F;
+        }
+    }
+    else{
+        // If drive is haplolethal offspring not viable if r2 on either chromosome (TADE):
+        if (TADE_LETHAL) {
+            if (SITE_ZERO_NON_TARGETED) {
+                // Drive zero rescues the individual from resistance effects at the furthest site (the site at NUM_LOCI).
+                drive_rescue_count = 0;
+                if (size(c1_dr))
+                    if (c1_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+                if (size(c2_dr))
+                    if (c2_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+
+                res_count = 0;
+                if (size(c1_res))
+                    if (c1_res[size(c1_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+                if (size(c2_res))
+                    if (c2_res[size(c2_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+
+                if (res_count > drive_rescue_count)
+                    return F;
+
+                // The final resistance site has already been processed.
+                // Remove it and process other sites according to the general rules.
+                c1_res = setDifference(c1_res, NUM_LOCI - 1);
+                c2_res = setDifference(c2_res, NUM_LOCI - 1);
+            }
+            resistance_sites = setUnion(c1_res, c2_res);
+            if (size(resistance_sites))
+                return F;
+        }
+
+        // If drive is recessive lethal, offspring not viable if r2 on matching locations (TARE):
+        if (TARE_LETHAL) {
+            if (SITE_ZERO_NON_TARGETED) {
+                // Drive zero rescues the individual from resistance effects at the furthest site (the site at NUM_LOCI).
+                drive_rescue_count = 0;
+                if (size(c1_dr))
+                    if (c1_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+                if (size(c2_dr))
+                    if (c2_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+
+                res_count = 0;
+                if (size(c1_res))
+                    if (c1_res[size(c1_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+                if (size(c2_res))
+                    if (c2_res[size(c2_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+
+                if (res_count - drive_rescue_count == 2)
+                    return F;
+
+                // The final resistance site has already been processed.
+                // Remove it and process other sites according to the general rules.
+                c1_res = setDifference(c1_res, NUM_LOCI - 1);
+                c2_res = setDifference(c2_res, NUM_LOCI - 1);
+            }
+            match = setIntersection(c1_res, c2_res);
+            if (size(match))
+                return F;
+        }
+
+        // TADDE is same as TADE, but dr/r at a given spot is viable.
+        if (TADDE_LETHAL) {
+            if (SITE_ZERO_NON_TARGETED) {
+                // Drive zero rescues the individual from resistance effects at the furthest site (the site at NUM_LOCI).
+                drive_rescue_count = 0;
+                if (size(c1_dr))
+                    if (c1_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+                if (size(c2_dr))
+                    if (c2_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+
+                res_count = 0;
+                if (size(c1_res))
+                    if (c1_res[size(c1_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+                if (size(c2_res))
+                    if (c2_res[size(c2_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+
+                if (res_count > 2 * drive_rescue_count)
+                    return F;
+
+                // The final resistance site has already been processed.
+                // Remove it and process other sites according to the general rules.
+                c1_res = setDifference(c1_res, NUM_LOCI - 1);
+                c2_res = setDifference(c2_res, NUM_LOCI - 1);
+            }
+            diff1 = setDifference(c1_res, c2_dr);
+            diff2 = setDifference(c2_res, c1_dr);
+            if (size(diff1) | size(diff2))
+                return F;
+        }
+
+        // TAHRE is the same as TARE but dr/r is non-viable, not just r/r.
+        if (TAHRE_LETHAL) {
+            if (SITE_ZERO_NON_TARGETED) {
+                // Drive zero rescues the individual from resistance effects at the furthest site (the site at NUM_LOCI).
+                drive_rescue_count = 0;
+                if (size(c1_dr))
+                    if (c1_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+                if (size(c2_dr))
+                    if (c2_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+
+                res_count = 0;
+                if (size(c1_res))
+                    if (c1_res[size(c1_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+                if (size(c2_res))
+                    if (c2_res[size(c2_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+
+                if (res_count == 2 & drive_rescue_count != 2)
+                    return F;
+
+                // The final resistance site has already been processed.
+                // Remove it and process other sites according to the general rules.
+                c1_res = setDifference(c1_res, NUM_LOCI - 1);
+                c2_res = setDifference(c2_res, NUM_LOCI - 1);
+            }
+            res_match = setIntersection(c1_res, c2_res);
+            dr_match1 = setIntersection(c1_res, c2_dr);
+            dr_match2 = setIntersection(c1_dr, c2_res);
+            if (size(res_match) | size(dr_match1) | size(dr_match2))
+                return F;
+        }
+    }
+    return T;
+}
+
+//// AGE BASED SURVIVAL RULES.
+late() {
+    all = sim.subpopulations.individuals;
+    for (ind in all) {
+        if (ind.sex == "M")
+            age_mortality_rate = MALE_MORTALITY[ind.age];
+        else
+            age_mortality_rate = FEMALE_MORTALITY[ind.age];
+        ind.fitnessScaling = 1 - age_mortality_rate;
+    }
+}
+
+//// RULES FOR FITNESS BASED ON GENOTYPE.
+function (f$)genotypeFitness(o<Individual>$ ind) {
+    // Representation of the value of the two chromosomes.
+    c1_value = 1.0;
+    c2_value = 1.0;
+
+    // Check both chromosomes for resistance allele.
+    if (ind.genome1.countOfMutationsOfType(m4) > 0)
+        c1_value = R2_FITNESS_VALUE;
+    if (ind.genome2.countOfMutationsOfType(m4) > 0)
+        c2_value = R2_FITNESS_VALUE;
+
+    // Check both chromosomes for drive and type 2 resistance allele.
+    c1_dr = ind.genome1.positionsOfMutationsOfType(m2);
+    c2_dr = ind.genome2.positionsOfMutationsOfType(m2);
+    if (size(c1_dr))
+        if (c1_dr[0] == 0)
+            c1_value = DRIVE_FITNESS_VALUE;
+    if (size(c2_dr))
+        if (c2_dr[0] == 0)
+            c2_value = DRIVE_FITNESS_VALUE;
+
+    // Check for resistance homozygote and heterozygote fitness penalty in TA*EV drives.
+    resistance_fitness_multiplier = 1.0;
+    c1_res = ind.genome1.positionsOfMutationsOfType(m4);
+    c2_res = ind.genome2.positionsOfMutationsOfType(m4);
+
+    if (ADDL_FEMALE_FERTILITY_TARGET) {
+        c1_res = setDifference(c1_res, NUM_LOCI);
+        c2_res = setDifference(c2_res, NUM_LOCI);
+    }
+
+    if (LEAKY_SOMATIC_EXPRESSION) {
+        // Cas9 expression in the embryo results in toxic effect where inherited drive disrupts inherited wt.
+        c1_wt = ind.genome1.positionsOfMutationsOfType(m1);
+        c2_wt = ind.genome2.positionsOfMutationsOfType(m1);
+        new_c1_res = setIntersection(c2_dr, c1_wt);
+        new_c2_res = setIntersection(c1_dr, c2_wt);
+        c1_res = setUnion(c1_res, new_c1_res);
+        c2_res = setUnion(c2_res, new_c2_res);
+    }
+
+    // For systems with multiple toxins possible at a locus.
+    if (DOUBLE_TOXINS) {
+        c1_dr = c1_dr + 2;  // Drive 1 at site x cuts at site x + 1 and rescues site x + 2.
+        c2_dr = c2_dr + 2;
+        c1_dr2 = ind.genome1.positionsOfMutationsOfType(m5) + 1;  // Drive 2 at site x cuts at site x + 2 and rescues site x + 1.
+        c2_dr2 = ind.genome2.positionsOfMutationsOfType(m5) + 1;
+        if (TADIL) {
+            // Fitness cost being  sqrt(TA_RESISTANCE_FITNESS_MULTIPLIER) where only one copy is missing is not implemented.
+            double_d1_rescue = setIntersection(c1_dr, c2_dr);
+            double_d2_rescue = setIntersection(c1_dr2, c2_dr2);
+            double_res = setIntersection(c1_res, c2_res);
+            unrescued_double_res = setDifference(setDifference(double_res, double_d1_rescue), double_d2_rescue);
+            unrescued_single_c1 = setDifference(setDifference(setDifference(setDifference(c1_res, c1_dr), c1_dr2), c2_dr), c2_dr2);
+            unrescued_single_c2 = setDifference(setDifference(setDifference(setDifference(c2_res, c1_dr), c1_dr2), c2_dr), c2_dr2);
+            if (size(unrescued_double_res) | size(unrescued_single_c1) | size(unrescued_single_c2))
+                resistance_fitness_multiplier = TA_RESISTANCE_FITNESS_MULTIPLIER;
+        }
+        if (TADDIL) {
+            // Fitness cost being  sqrt(TA_RESISTANCE_FITNESS_MULTIPLIER) where only one copy is missing is not implemented.
+            combined_res_loci = setUnion(c1_res, c2_res);
+            unrescued = setDifference(setDifference(setDifference(setDifference(combined_res_loci, c1_dr), c1_dr2), c2_dr), c2_dr2);
+            if (size(unrescued))
+                resistance_fitness_multiplier = TA_RESISTANCE_FITNESS_MULTIPLIER;
+        }
+        if (TARIL) {
+            double_res = setIntersection(c1_res, c2_res);
+            unrescued = setDifference(setDifference(setDifference(setDifference(double_res, c1_dr), c1_dr2), c2_dr), c2_dr2);
+            if (size(unrescued))
+                resistance_fitness_multiplier = TA_RESISTANCE_FITNESS_MULTIPLIER;
+        }
+        if (TAHRIL) {
+            double_res = setIntersection(c1_res, c2_res);
+            d1_rescue = setIntersection(c1_dr, c2_dr);
+            d2_rescue = setIntersection(c1_dr2, c2_dr2);
+            unrescued = setDifference(setDifference(double_res, d1_rescue), d2_rescue);
+            if (size(unrescued))
+                resistance_fitness_multiplier = TA_RESISTANCE_FITNESS_MULTIPLIER;
+        }
+    }
+
+    else {
+        if (TADIL) {
+            if (SITE_ZERO_NON_TARGETED) {
+                // Drive zero rescues the individual from resistance effects at the furthest site (the site at NUM_LOCI).
+                drive_rescue_count = 0;
+                if (size(c1_dr))
+                    if (c1_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+                if (size(c2_dr))
+                    if (c2_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+                res_count = 0;
+                if (size(c1_res))
+                    if (c1_res[size(c1_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+                if (size(c2_res))
+                    if (c2_res[size(c2_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+
+                res_count = res_count - drive_rescue_count;
+                if (res_count == 1)
+                    resistance_fitness_multiplier = sqrt(TA_RESISTANCE_FITNESS_MULTIPLIER);
+                if (res_count == 2)
+                    resistance_fitness_multiplier = TA_RESISTANCE_FITNESS_MULTIPLIER;
+
+                // The final resistance site has already been processed.
+                // Remove it and process other sites according to the general rules.
+                c1_res = setDifference(c1_res, NUM_LOCI - 1);
+                c2_res = setDifference(c2_res, NUM_LOCI - 1);
+            }
+            resistance_sites = setUnion(c1_res, c2_res);
+            if (size(resistance_sites))
+                resistance_fitness_multiplier = sqrt(TA_RESISTANCE_FITNESS_MULTIPLIER);
+
+            both_missing = setIntersection(c1_res, c2_res);
+            if (size(both_missing))
+                resistance_fitness_multiplier = TA_RESISTANCE_FITNESS_MULTIPLIER;
+        }
+        // If drive target is recessive, fitness impact from r2 on matching locations (TARE):
+        if (TARIL) {
+            if (SITE_ZERO_NON_TARGETED) {
+                // Drive zero rescues the individual from resistance effects at the furthest site (the site at NUM_LOCI).
+                drive_rescue_count = 0;
+                if (size(c1_dr))
+                    if (c1_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+                if (size(c2_dr))
+                    if (c2_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+
+                res_count = 0;
+                if (size(c1_res))
+                    if (c1_res[size(c1_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+                if (size(c2_res))
+                    if (c2_res[size(c2_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+
+                if (res_count - drive_rescue_count == 2)
+                    resistance_fitness_multiplier = TA_RESISTANCE_FITNESS_MULTIPLIER;
+
+                // The final resistance site has already been processed.
+                // Remove it and process other sites according to the general rules.
+                c1_res = setDifference(c1_res, NUM_LOCI - 1);
+                c2_res = setDifference(c2_res, NUM_LOCI - 1);
+            }
+            match = setIntersection(c1_res, c2_res);
+            if (size(match))
+                resistance_fitness_multiplier = TA_RESISTANCE_FITNESS_MULTIPLIER;
+        }
+        // TADDE is same as TADE, but dr/r at a given spot is not negatively impacted.
+        if (TADDIL) {
+            if (SITE_ZERO_NON_TARGETED) {
+                // Drive zero rescues the individual from resistance effects at the furthest site (the site at NUM_LOCI).
+                drive_rescue_count = 0;
+                if (size(c1_dr))
+                    if (c1_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+                if (size(c2_dr))
+                    if (c2_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+
+                res_count = 0;
+                if (size(c1_res))
+                    if (c1_res[size(c1_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+                if (size(c2_res))
+                    if (c2_res[size(c2_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+
+                res_count = res_count - 2 * drive_rescue_count;
+                if (res_count == 1)
+                    resistance_fitness_multiplier = sqrt(TA_RESISTANCE_FITNESS_MULTIPLIER);
+                if (res_count == 2)
+                    resistance_fitness_multiplier = TA_RESISTANCE_FITNESS_MULTIPLIER;
+
+                // The final resistance site has already been processed.
+                // Remove it and process other sites according to the general rules.
+                c1_res = setDifference(c1_res, NUM_LOCI - 1);
+                c2_res = setDifference(c2_res, NUM_LOCI - 1);
+            }
+            diff1 = setDifference(c1_res, c2_dr);
+            diff2 = setDifference(c2_res, c1_dr);
+            if (size(diff1) | size(diff2))
+                resistance_fitness_multiplier = sqrt(TA_RESISTANCE_FITNESS_MULTIPLIER);
+
+            both_missing = setIntersection(c1_res, c2_res);
+            if (size(both_missing))
+                resistance_fitness_multiplier = TA_RESISTANCE_FITNESS_MULTIPLIER;
+        }
+        // TAHRE is the same as TARE but dr/r is negatively impacted, not just r/r.
+        if (TAHRIL) {
+            if (SITE_ZERO_NON_TARGETED) {
+                // Drive zero rescues the individual from resistance effects at the furthest site (the site at NUM_LOCI).
+                drive_rescue_count = 0;
+                if (size(c1_dr))
+                    if (c1_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+                if (size(c2_dr))
+                    if (c2_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+
+                res_count = 0;
+                if (size(c1_res))
+                    if (c1_res[size(c1_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+                if (size(c2_res))
+                    if (c2_res[size(c2_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+
+                if (res_count == 2 & drive_rescue_count != 2)
+                    resistance_fitness_multiplier = TA_RESISTANCE_FITNESS_MULTIPLIER;
+
+                // The final resistance site has already been processed.
+                // Remove it and process other sites according to the general rules.
+                c1_res = setDifference(c1_res, NUM_LOCI - 1);
+                c2_res = setDifference(c2_res, NUM_LOCI - 1);
+            }
+            res_match = setIntersection(c1_res, c2_res);
+            dr_match1 = setIntersection(c1_res, c2_dr);
+            dr_match2 = setIntersection(c1_dr, c2_res);
+            if (size(res_match) | size(dr_match1) | size(dr_match2))
+                resistance_fitness_multiplier = TA_RESISTANCE_FITNESS_MULTIPLIER;
+        }
+    }
+    // Return fitness for individual with this genotype.
+    return sqrt(c1_value * c2_value) * resistance_fitness_multiplier;
+}
+
+//// FUNCTION FOR EVALUATING INFERTILITY CAUSED BY SUPRESSION DRIVES.
+function (logical)isInfertile(o<Individual>$ ind) {
+    c1_res = ind.genome1.positionsOfMutationsOfType(m4);
+    c2_res = ind.genome2.positionsOfMutationsOfType(m4);
+    c1_dr = ind.genome1.positionsOfMutationsOfType(m2);
+    c2_dr = ind.genome2.positionsOfMutationsOfType(m2);
+
+    if (ADDL_FEMALE_FERTILITY_TARGET) {
+        if (ind.sex == "F") {
+            res_on_c1 = F;
+            res_on_c2 = F;
+            if (size(c1_res))
+                if (c1_res[size(c1_res) - 1] == NUM_LOCI)
+                    res_on_c1 = T;
+            if (size(c2_res))
+                if (c2_res[size(c2_res) - 1] == NUM_LOCI)
+                    res_on_c2 = T;
+            if (res_on_c1 & res_on_c2)
+                return T;
+        }
+        c1_res = setDifference(c1_res, NUM_LOCI);
+        c2_res = setDifference(c2_res, NUM_LOCI);
+    }
+
+    if (ind.sex == "F") {
+        if (SITE_ZERO_RECESSIVE_FEMALE_STERILE) {
+            drive_on_c1 = F;
+            drive_on_c2 = F;
+            if (size(c1_dr))
+                if (c1_dr[0] == 0)
+                    drive_on_c1 = T;
+            if (size(c2_dr))
+                if (c2_dr[0] == 0)
+                    drive_on_c2 = T;
+            if (drive_on_c1 & drive_on_c2)
+                return T;
+        }
+
+        // If drive resistance targets are haplosterile (sterile TADE):
+        if (FEMALE_TADE_STERILE) {
+            if (SITE_ZERO_NON_TARGETED) {
+                // Drive zero rescues the individual from resistance effects at the furthest site (the site at NUM_LOCI).
+                drive_rescue_count = 0;
+                if (size(c1_dr))
+                    if (c1_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+                if (size(c2_dr))
+                    if (c2_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+
+                res_count = 0;
+                if (size(c1_res))
+                    if (c1_res[size(c1_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+                if (size(c2_res))
+                    if (c2_res[size(c2_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+
+                if (res_count > drive_rescue_count)
+                    return T;
+
+                // The final resistance site has already been processed.
+                // Remove it and process other sites according to the general rules.
+                c1_res = setDifference(c1_res, NUM_LOCI - 1);
+                c2_res = setDifference(c2_res, NUM_LOCI - 1);
+            }
+
+            resistance_sites = setUnion(c1_res, c2_res);
+            if (size(resistance_sites))
+                return T;
+        }
+        // If drive resistance targets are recessive sterile (sterile TARE):
+        if (FEMALE_TARE_STERILE) {
+            if (SITE_ZERO_NON_TARGETED) {
+                // Drive zero rescues the individual from resistance effects at the furthest site (the site at NUM_LOCI).
+                drive_rescue_count = 0;
+                if (size(c1_dr))
+                    if (c1_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+                if (size(c2_dr))
+                    if (c2_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+
+                res_count = 0;
+                if (size(c1_res))
+                    if (c1_res[size(c1_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+                if (size(c2_res))
+                    if (c2_res[size(c2_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+
+                if (res_count - drive_rescue_count == 2)
+                    return T;
+
+                // The final resistance site has already been processed.
+                // Remove it and process other sites according to the general rules.
+                c1_res = setDifference(c1_res, NUM_LOCI - 1);
+                c2_res = setDifference(c2_res, NUM_LOCI - 1);
+            }
+            match = setIntersection(c1_res, c2_res);
+            if (size(match))
+                return T;
+        }
+        // TADDE is same as TADE, but dr/r at a given spot is not supressed:
+        if (FEMALE_TADDE_STERILE) {
+            if (SITE_ZERO_NON_TARGETED) {
+                // Drive zero rescues the individual from resistance effects at the furthest site (the site at NUM_LOCI).
+                drive_rescue_count = 0;
+                if (size(c1_dr))
+                    if (c1_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+                if (size(c2_dr))
+                    if (c2_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+
+                res_count = 0;
+                if (size(c1_res))
+                    if (c1_res[size(c1_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+                if (size(c2_res))
+                    if (c2_res[size(c2_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+
+                if (res_count > 2 * drive_rescue_count)
+                    return T;
+
+                // The final resistance site has already been processed.
+                // Remove it and process other sites according to the general rules.
+                c1_res = setDifference(c1_res, NUM_LOCI - 1);
+                c2_res = setDifference(c2_res, NUM_LOCI - 1);
+            }
+            diff1 = setDifference(c1_res, c2_dr);
+            diff2 = setDifference(c2_res, c1_dr);
+
+            if (size(diff1) | size(diff2))
+                return T;
+        }
+        // TAHRE is the same as TARE but dr/r is supressed, not just r/r.
+        if (FEMALE_TAHRE_STERILE) {
+            if (SITE_ZERO_NON_TARGETED) {
+                // Drive zero rescues the individual from resistance effects at the furthest site (the site at NUM_LOCI).
+                drive_rescue_count = 0;
+                if (size(c1_dr))
+                    if (c1_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+                if (size(c2_dr))
+                    if (c2_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+
+                res_count = 0;
+                if (size(c1_res))
+                    if (c1_res[size(c1_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+                if (size(c2_res))
+                    if (c2_res[size(c2_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+
+                if (res_count == 2 & drive_rescue_count != 2)
+                    return T;
+
+                // The final resistance site has already been processed.
+                // Remove it and process other sites according to the general rules.
+                c1_res = setDifference(c1_res, NUM_LOCI - 1);
+                c2_res = setDifference(c2_res, NUM_LOCI - 1);
+            }
+            res_match = setIntersection(c1_res, c2_res);
+            dr_match1 = setIntersection(c1_res, c2_dr);
+            dr_match2 = setIntersection(c1_dr, c2_res);
+            if (size(res_match) | size(dr_match1) | size(dr_match2))
+                return T;
+        }
+    }
+    else {  // For male infertility:
+        // Sterile male technique (non-gene drive)
+        if (STERILE_MALE) {
+            if (sum(ind.genomes.countOfMutationsOfType(m2)))
+                return T;
+        }
+        if (SITE_ZERO_RECESSIVE_MALE_STERILE) {
+            drive_on_c1 = F;
+            drive_on_c2 = F;
+            if (size(c1_dr))
+                if (c1_dr[0] == 0)
+                    drive_on_c1 = T;
+            if (size(c2_dr))
+                if (c2_dr[0] == 0)
+                    drive_on_c2 = T;
+            if (drive_on_c1 & drive_on_c2)
+                return T;
+        }
+        // If drive resistance targets are haplosterile (sterile TADE):
+        if (MALE_TADE_STERILE) {
+            if (SITE_ZERO_NON_TARGETED) {
+                // Drive zero rescues the individual from resistance effects at the furthest site (the site at NUM_LOCI).
+                drive_rescue_count = 0;
+                if (size(c1_dr))
+                    if (c1_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+                if (size(c2_dr))
+                    if (c2_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+
+                res_count = 0;
+                if (size(c1_res))
+                    if (c1_res[size(c1_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+                if (size(c2_res))
+                    if (c2_res[size(c2_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+
+                if (res_count > drive_rescue_count)
+                    return T;
+
+                // The final resistance site has already been processed.
+                // Remove it and process other sites according to the general rules.
+                c1_res = setDifference(c1_res, NUM_LOCI - 1);
+                c2_res = setDifference(c2_res, NUM_LOCI - 1);
+            }
+
+            resistance_sites = setUnion(c1_res, c2_res);
+            if (size(resistance_sites))
+                return T;
+        }
+        // If drive resistance targets are recessive sterile (sterile TARE):
+        if (MALE_TARE_STERILE) {
+            if (SITE_ZERO_NON_TARGETED) {
+                // Drive zero rescues the individual from resistance effects at the furthest site (the site at NUM_LOCI).
+                drive_rescue_count = 0;
+                if (size(c1_dr))
+                    if (c1_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+                if (size(c2_dr))
+                    if (c2_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+
+                res_count = 0;
+                if (size(c1_res))
+                    if (c1_res[size(c1_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+                if (size(c2_res))
+                    if (c2_res[size(c2_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+
+                if (res_count - drive_rescue_count == 2)
+                    return T;
+
+                // The final resistance site has already been processed.
+                // Remove it and process other sites according to the general rules.
+                c1_res = setDifference(c1_res, NUM_LOCI - 1);
+                c2_res = setDifference(c2_res, NUM_LOCI - 1);
+            }
+            match = setIntersection(c1_res, c2_res);
+            if (size(match))
+                return T;
+        }
+        // TADDE is same as TADE, but dr/r at a given spot is not supressed:
+        if (MALE_TADDE_STERILE) {
+            if (SITE_ZERO_NON_TARGETED) {
+                // Drive zero rescues the individual from resistance effects at the furthest site (the site at NUM_LOCI).
+                drive_rescue_count = 0;
+                if (size(c1_dr))
+                    if (c1_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+                if (size(c2_dr))
+                    if (c2_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+
+                res_count = 0;
+                if (size(c1_res))
+                    if (c1_res[size(c1_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+                if (size(c2_res))
+                    if (c2_res[size(c2_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+
+                if (res_count > 2 * drive_rescue_count)
+                    return T;
+
+                // The final resistance site has already been processed.
+                // Remove it and process other sites according to the general rules.
+                c1_res = setDifference(c1_res, NUM_LOCI - 1);
+                c2_res = setDifference(c2_res, NUM_LOCI - 1);
+            }
+            diff1 = setDifference(c1_res, c2_dr);
+            diff2 = setDifference(c2_res, c1_dr);
+
+            if (size(diff1) | size(diff2))
+                return T;
+        }
+        // TAHRE is the same as TARE but dr/r is supressed, not just r/r.
+        if (MALE_TAHRE_STERILE) {
+            if (SITE_ZERO_NON_TARGETED) {
+                // Drive zero rescues the individual from resistance effects at the furthest site (the site at NUM_LOCI).
+                drive_rescue_count = 0;
+                if (size(c1_dr))
+                    if (c1_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+                if (size(c2_dr))
+                    if (c2_dr[0] == 0)
+                        drive_rescue_count = drive_rescue_count + 1;
+
+                res_count = 0;
+                if (size(c1_res))
+                    if (c1_res[size(c1_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+                if (size(c2_res))
+                    if (c2_res[size(c2_res) - 1] == NUM_LOCI - 1)
+                        res_count = res_count + 1;
+
+                if (res_count == 2 & drive_rescue_count != 2)
+                    return T;
+
+                // The final resistance site has already been processed.
+                // Remove it and process other sites according to the general rules.
+                c1_res = setDifference(c1_res, NUM_LOCI - 1);
+                c2_res = setDifference(c2_res, NUM_LOCI - 1);
+            }
+            res_match = setIntersection(c1_res, c2_res);
+            dr_match1 = setIntersection(c1_res, c2_dr);
+            dr_match2 = setIntersection(c1_dr, c2_res);
+            if (size(res_match) | size(dr_match1) | size(dr_match2))
+                return T;
+        }
+    }
+    return F;
+}
+
+//// REPRODUCTION RULES FOR EACH FEMALE.
+reproduction(NULL, "F") {
+    // First, evaluate whether reproduction is suppressed by a population suppression drive,
+    // Then, select a mate based on fitness, then generate offspring.
+
+    // Check to see if this female is infertile because of drive mechanics:
+    if (isInfertile(individual))
+        return;
+
+    // Females choose a random provisional mate, but make a final mating decision based on the
+    // attractiveness of that mate, as determined by the fitness of the mate. If a mate is
+    // rejected, the female tries again, up to a maximum number of tries, after which she gives up.
+	all_neighbors = i1.nearestNeighbors(individual, subpop.individualCount);
+	neighbors = all_neighbors[all_neighbors.sex == "M"];
+	if (size(neighbors) == 0) // If no mates are in mate detection range, the female won't mate.
+		return;
+		
+	attempt_no = 0;
+    while (1) {
+        // First, select a random potential mate.
+		mate_no = 0;
+		if (size(neighbors) > 1)
+			mate_no = rdunif(1, max=size(neighbors) - 1);
+		selected_mate = neighbors[mate_no];
+
+        // Determine attractiveness of potential mate.
+        mate_attractiveness = genotypeFitness(selected_mate);
+
+        // Determine if this mate is chosen, based on attractiveness.
+        if (runif(1) < mate_attractiveness)
+            break;  // Select this mate.
+        // After ten candidates fail, female gives up.
+        attempt_no = attempt_no + 1;
+        if (attempt_no == MAX_ATTEMPTS_TO_FIND_SUITABLE_MATE-1)
+            return;
+    }
+    // Mate has now been selected.
+
+    // Check to see if mate is infertile because of drive mechanics.
+    if (isInfertile(selected_mate))
+        return;
+
+    // Fecundity is based on both the crowding/competition in the system, as well as female fitness.
+    // Number of offspring number based on binomial distrobution.
+    //p = genotypeFitness(individual) * capacity_fitness_scaling * 2 / MAX_OFFSPRING / (1 + RATE_FEMALES_SURVIVE);
+	n_1 = all_neighbors[abs(all_neighbors.x - individual.x) <= DENSITY_INTERACTION_DISTANCE];
+	adult_density_force = length(n_1) - sum(i1.interactionDistance(individual,n_1))*(1/DENSITY_INTERACTION_DISTANCE);	
+	competition_ratio = adult_density_force / EXPECTED_ADULT_COMPETITION;
+	actual_competition_factor = GROWTH_AT_ZERO_DENSITY/ ((GROWTH_AT_ZERO_DENSITY-1) * competition_ratio + 1);   
+	p = genotypeFitness(individual) * actual_competition_factor * 0.04 / (1 + RATE_FEMALES_SURVIVE);    
+    num_offspring = rbinom(1, MAX_OFFSPRING, p);
+
+    for (i in seqLen(num_offspring)) {
+        // Add offspring to the subpopulation.
+        offspring = subpop.addCrossed(individual, selected_mate);
+		if (!isNULL(offspring))
+		{
+			if (REPRISING_BOUNDARIES)
+			{
+				// Offspring placement within reprising boundaries.
+				if (!ONE_DIMENSIONAL)
+				{
+					do position = individual.spatialPosition + rnorm(2, 0, FEMALE_SPEED);
+					while (!individual.subpopulation.pointInBounds(position));
+					offspring.setSpatialPosition(position);
+				} else
+				{
+					// Toroidal world offspring placement.
+					do position = individual.spatialPosition + rnorm(1, 0, FEMALE_SPEED);
+					while (!individual.subpopulation.pointInBounds(position));
+					offspring.setSpatialPosition(position);
+				}
+			}
+			else {
+				if (!ONE_DIMENSIONAL) {
+					position = individual.spatialPosition + rnorm(2, 0, FEMALE_SPEED);
+					offspring.setSpatialPosition(p1.pointPeriodic(position));
+				} else {
+					position = individual.spatialPosition + rnorm(1, 0, FEMALE_SPEED);
+					offspring.setSpatialPosition(p1.pointPeriodic(position));
+				}
+			}
+		}
+    }
+}
+
+//// COLOR RULES FOR SLIM GUI DISPLAY.
+early() {
+	all = sim.subpopulations.individuals;
+	all.color = "blue"; // wt individuals are blue
+	two_res = (all.genome1.countOfMutationsOfType(m4) | all.genome1.countOfMutationsOfType(m3) == NUM_LOCI) & (all.genome2.countOfMutationsOfType(m4) | all.genome2.countOfMutationsOfType(m3) == NUM_LOCI);
+	all[two_res].color = "orange"; // Resistance homozygotes are yellow
+	all[(all.countOfMutationsOfType(m2)!= 0) | (all.countOfMutationsOfType(m5)!= 0)].color = "red"; // Drive-carrying individuals are red	
+}
+
+late() {
+	i1.evaluate();
+	i2.evaluate();
+}
+
+//// START THE SIMULATION BY ADDING AN INITIAL WILD POPULATION.
+1 {
+    // Start with a population of wild type flies.
+    sim.addSubpop("p1", CAPACITY);
+    all = p1.individuals;
+    for (i in seqLen(NUM_LOCI))
+        p1.individuals.genomes.addNewDrawnMutation(m1, i);
+    if (ADDL_FEMALE_FERTILITY_TARGET)
+        p1.individuals.genomes.addNewDrawnMutation(m1, NUM_LOCI);
+        
+	all.x=p1.pointUniform(CAPACITY);
+	sim.setValue("timer","start");
+}
+
+//// DROP A GROUP OF MODIFIED INDIVIDUALS INTO THE POPULATION.
+11: {
+    if (asInteger(sim.generation) == 11 | (MUTLIPLE_DROPS & ((asInteger(sim.generation) - 11) % DROP_INTERVAL == 0))) {
+        if (!MAX_NUMBER_OF_DROPS | asInteger(sim.generation) <= 11 + DROP_INTERVAL * (MAX_NUMBER_OF_DROPS - 1)) {
+            // Drive will be added this generation. Default size of drop is DROP_SIZE.
+            size_of_drop = DROP_SIZE;
+            if (DROP_PERCENTAGE_OVERRIDE) {
+                if (DROP_ADDS_TO_POP)
+                    // Population size is divided by two because individuals from prev generation have not yet been removed.
+                    size_of_drop = asInteger(p1.individualCount / 2 * DROP_PERCENTAGE_OVERRIDE / (1 - DROP_PERCENTAGE_OVERRIDE));
+                else
+                    size_of_drop = asInteger(p1.individualCount * DROP_PERCENTAGE_OVERRIDE);
+            }
+            
+            
+            if (DROP_ADDS_TO_POP) {
+                // Add a drop of modified individuals to p1.
+                if (MALE_ONLY_DROP | STERILE_MALE)
+                    // Drop a population of only males.
+                    sim.addSubpop("p2", size_of_drop, 1.0);
+                else if (FEMALE_ONLY_DROP)
+                    // Drop a population of only females.
+                    sim.addSubpop("p2", size_of_drop, 0.0);
+                else
+                    sim.addSubpop("p2", size_of_drop);
+                drop = p2.individuals;
+            }
+            else
+                drop = sample(p1.individuals, size_of_drop);
+
+            // Now set the drop individuals to the correct genotypes:
+            for (i in seqLen(NUM_LOCI))
+                drop.genomes.addNewDrawnMutation(m2, i);
+
+            // Systems with two toxins per locus, the last two sites have no drive and c2 gets the second drive.
+            if (DOUBLE_TOXINS) {
+                for (i in seqLen(NUM_LOCI))
+                    drop.genome2.addNewDrawnMutation(m5, i);
+                drop.genomes.addNewDrawnMutation(m1, NUM_LOCI - 1);
+                drop.genomes.addNewDrawnMutation(m1, NUM_LOCI - 2);
+            }
+
+            // For drive systems with a supression drive at locus 0, the final locus has no drive.
+            if (SITE_ZERO_NON_TARGETED)
+                drop.genomes.addNewDrawnMutation(m1, NUM_LOCI - 1);
+
+            // For heterozygous drop, one of the chromosomes is set to wild type:
+            if (HETEROZYGOUS_DROP)
+                for (i in seqLen(NUM_LOCI))
+                    drop.genome2.addNewDrawnMutation(m1, i);
+
+            // In X_LINKED males' genome2 (from father) is always wt.
+            if (X_LINKED) {
+                males = (drop.sex == "M");
+                // Set all Y chromosomes to wt.
+                for (i in seqLen(NUM_LOCI))
+                    drop[males].genome2.addNewDrawnMutation(m1, i);
+            }
+
+            if (ADDL_FEMALE_FERTILITY_TARGET)
+                drop.genomes.addNewDrawnMutation(m1, NUM_LOCI);
+
+            // Now that genes have been set, move all the individuals from the drop into p1:
+            p1.takeMigrants(drop);
+            
+            if (DROP_ADDS_TO_POP){
+					drop.x = runif(size_of_drop, 0, DROP_RADIUS);
+            	p2.removeSubpopulation();
+            }
+        }
+    }
+}
+
+//// PROGRAM OUTPUT.
+11:late() {
+    // Calculate rates that we are intersted in:
+    all = sim.subpopulations.individuals;
+    num_wt = sum(all.genomes.countOfMutationsOfType(m1));
+    num_dr = sum(all.genomes.countOfMutationsOfType(m2) + all.genomes.countOfMutationsOfType(m5));
+    num_r1 = sum(all.genomes.countOfMutationsOfType(m3));
+    num_r2 = sum(all.genomes.countOfMutationsOfType(m4));
+    num_has_drive = sum(all.genome1.countOfMutationsOfType(m2) > 0
+                      | all.genome2.countOfMutationsOfType(m2) > 0
+                      | all.genome1.countOfMutationsOfType(m5) > 0
+                      | all.genome2.countOfMutationsOfType(m5) > 0);
+
+    num_drives = SITE_ZERO_NON_TARGETED ? NUM_LOCI - 1 else DOUBLE_TOXINS ? NUM_LOCI - 2 else NUM_LOCI;
+    //catn("test"+num_drives);
+
+    num_wt_loci = NUM_LOCI;
+    if (ADDL_FEMALE_FERTILITY_TARGET)
+        num_wt_loci = NUM_LOCI + 1;
+
+    rate_wt = num_wt / (2 * num_wt_loci * size(all));
+    rate_dr = num_dr / (2 * num_drives * size(all));
+    rate_r1 = num_r1 / (2 * num_drives * size(all));
+    rate_r2 = num_r2 / (2 * num_drives * size(all));
+
+    rate_has_drive = num_has_drive / (size(all));
+
+	   this_gen=sim.generation-10;
+	   target=all[(all.countOfMutationsOfType(m2)!= 0)];
+	   tx=target.x;
+	   catn("generation:"+this_gen);
+	   n=0;
+	   do{
+		   if(any((all.x > (n/10)) & (all.x <= ((n+1)/10)))){
+				   if(any((tx <= (n+1)/10) & (tx > (n/10)))){
+					   slice_x1= (tx >(n/10) ) & (tx <= ((n+1)/10));
+					   slice1=target[slice_x1];
+					   num_x1=(all.x > (n/10)) & (all.x < ((n+1)/10));
+					   num_x1_1 = all[num_x1];
+					   num_x_1 = length(num_x1_1);
+					   num_dr_1 = sum(slice1.genomes.countOfMutationsOfType(m2));
+					   rate_dr_1 = num_dr_1/(2*num_x_1*num_drives);
+					   n=n+1;
+					   //catn("num_x_1:"+num_x_1);
+					   //catn("num_dr_1:"+num_dr_1);
+					   catn("SLICE"+n+":"+rate_dr_1);
+				   }
+				   else{
+					    n=n+1;
+					    catn("SLICE"+n+":0");				
+				   }
+		  }
+		  else{
+				 n=n+1;
+				 catn("SLICE"+n+":N/A");
+		  }
+      }while(n<10);
+  
+	   slice_x3= (tx >0.2) & (tx <= 0.3);
+	   slice3=target[slice_x3];
+	   num_x3=(all.x > 0.2) & (all.x < 0.3);
+	   num_x3_1 = all[num_x3];
+	   num_x_3 = length(num_x3_1);
+		num_dr_3 = sum(slice3.genomes.countOfMutationsOfType(m2));
+		rate_dr_3 = num_dr_3/(2*num_drives*num_x_3);
+      timer = sim.getValue("timer");
+      //only start timer once
+      if (rate_dr_3 >= BAR) {
+         if (timer == "start") {
+			    thisgen=sim.generation-10;
+			    catn("STARTING_GENS:" +thisgen);
+			    sim.setValue("timer", thisgen);
+		  }
+	   }
+	
+	   slice_x8= (tx >0.7) & (tx <= 0.8);
+	   slice8=target[slice_x8];
+	   num_x8=(all.x > 0.7) & (all.x < 0.8);
+	   num_x8_1 = all[num_x8];
+	   num_x_8 = length(num_x8_1);
+		num_dr_8 = sum(slice8.genomes.countOfMutationsOfType(m2));
+		rate_dr_8 = num_dr_8/(2*num_drives*num_x_8);
+	
+	   if (rate_dr_8 >= BAR) {
+		    start_gen = sim.getValue("timer");
+		    this_gen = sim.generation-10;
+		    gens_elapsed = this_gen - start_gen;
+          catn("EMBRYO:"+ EMBRYO_RESISTANCE_RATE);
+          catn("GERMLINE:"+ GERMLINE_RESISTANCE_RATE);
+		    catn("STOPPING_GENS:" + this_gen);
+		    catn("TIMED_GENS:" + gens_elapsed);
+		    sim.simulationFinished();
+	   }
+
+}
+
+//// PROGRAM END CONDITION.
+311 late() {
+          catn("EMBRYO:"+ EMBRYO_RESISTANCE_RATE);
+          catn("GERMLINE:"+ GERMLINE_RESISTANCE_RATE);
+			 catn("RATE:"+ GROWTH_AT_ZERO_DENSITY);
+   		 sim.simulationFinished();
+}
+
