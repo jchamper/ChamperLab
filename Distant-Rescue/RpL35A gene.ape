@@ -1,0 +1,252 @@
+LOCUS       RpL35A_gene             3862 bp    DNA        linear       26-NOV-2022
+DEFINITION  .
+ACCESSION   
+VERSION     
+SOURCE      .
+  ORGANISM  .
+COMMENT     
+COMMENT     ApEinfo:methylated:0
+FEATURES             Location/Qualifiers
+     gene            3201..3862
+                     /locus_tag="PEK Gene partial"
+                     /label="PEK Gene partial"
+                     /ApEinfo_label="PEK Gene partial"
+                     /ApEinfo_fwdcolor="#ff797d"
+                     /ApEinfo_revcolor="#ff797d"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     3'UTR           2251..2328
+                     /locus_tag="RpL35A 3'UTR"
+                     /label="RpL35A 3'UTR"
+                     /ApEinfo_label="RpL35A 3'UTR"
+                     /ApEinfo_fwdcolor="#f76ca1"
+                     /ApEinfo_revcolor="#f76ca1"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     5'UTR           1577..1583
+                     /locus_tag="RpL35A Exon 3 5' UTR"
+                     /label="RpL35A Exon 3 5' UTR"
+                     /ApEinfo_label="RpL35A Exon 3 5' UTR"
+                     /ApEinfo_fwdcolor="#ff00ce"
+                     /ApEinfo_revcolor="#ff00ce"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     CDS             1584..1805
+                     /locus_tag="RpL35A Exon 3 CDS"
+                     /label="RpL35A Exon 3 CDS"
+                     /ApEinfo_label="RpL35A Exon 3 CDS"
+                     /ApEinfo_fwdcolor="#ddc700"
+                     /ApEinfo_revcolor="#ddc700"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     CDS             1931..1999
+                     /locus_tag="RpL35A Exon 4 CDS"
+                     /label="RpL35A Exon 4 CDS"
+                     /ApEinfo_label="RpL35A Exon 4 CDS"
+                     /ApEinfo_fwdcolor="#ddc700"
+                     /ApEinfo_revcolor="#ddc700"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     CDS             2227..2250
+                     /locus_tag="RpL35A Exon 5 CDS"
+                     /label="RpL35A Exon 5 CDS"
+                     /ApEinfo_label="RpL35A Exon 5 CDS"
+                     /ApEinfo_fwdcolor="#ddc700"
+                     /ApEinfo_revcolor="#ddc700"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     misc_binding    1978..1997
+                     /locus_tag="gRNA Target TADEr2"
+                     /label="gRNA Target TADEr2"
+                     /ApEinfo_label="gRNA Target TADEr2"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /ApEinfo_revcolor="#ff004b"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     misc_binding    1952..1971
+                     /locus_tag="gRNA Target TADEr2(1)"
+                     /label="gRNA Target TADEr2(1)"
+                     /ApEinfo_label="gRNA Target TADEr2"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /ApEinfo_revcolor="#ff003f"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     promoter        361..846
+                     /locus_tag="Rpl35A Promoter Region?"
+                     /label="Rpl35A Promoter Region?"
+                     /ApEinfo_label="Rpl35A Promoter Region?"
+                     /ApEinfo_fwdcolor="#346ee0"
+                     /ApEinfo_revcolor="#346ee0"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     CDS             2000..2158
+                     /locus_tag="RpL35A Exon 4 CDS(1)"
+                     /label="RpL35A Exon 4 CDS(1)"
+                     /ApEinfo_label="RpL35A Exon 4 CDS"
+                     /ApEinfo_fwdcolor="#ddc700"
+                     /ApEinfo_revcolor="#ddc700"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     5'UTR           940..968
+                     /locus_tag="RpL35A Exon 2 5'UTR"
+                     /label="RpL35A Exon 2 5'UTR"
+                     /ApEinfo_label="RpL35A Exon 2 5'UTR"
+                     /ApEinfo_fwdcolor="#ff00ce"
+                     /ApEinfo_revcolor="#ff00ce"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     5'UTR           847..879
+                     /locus_tag="RpL35A Exon 1 5'UTR"
+                     /label="RpL35A Exon 1 5'UTR"
+                     /ApEinfo_label="RpL35A Exon 1 5'UTR"
+                     /ApEinfo_fwdcolor="#ff00ce"
+                     /ApEinfo_revcolor="#ff00ce"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     primer_bind     1490..1511
+                     /locus_tag="Rpl35ALeft_S_F"
+                     /label="Rpl35ALeft_S_F"
+                     /ApEinfo_label="Rpl35ALeft_S_F"
+                     /ApEinfo_fwdcolor="#a273ff"
+                     /ApEinfo_revcolor="#cd5bff"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     misc_binding    complement(1684..1703)
+                     /locus_tag="gRNA Target TADEr4"
+                     /label="gRNA Target TADEr4"
+                     /ApEinfo_label="gRNA Target TADEr4"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /ApEinfo_revcolor="#ff004b"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     gene            complement(1..170)
+                     /locus_tag="POLDIP2 (partial)"
+                     /label="POLDIP2 (partial)"
+                     /ApEinfo_label="POLDIP2 (partial)"
+                     /ApEinfo_fwdcolor="#ff797d"
+                     /ApEinfo_revcolor="#ff102f"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     primer_bind     2147..2167
+                     /locus_tag="Primer Rpl35ARight_S_F"
+                     /label="Primer Rpl35ARight_S_F"
+                     /ApEinfo_label="Primer Rpl35ARight_S_F"
+                     /ApEinfo_fwdcolor="#a273ff"
+                     /ApEinfo_revcolor="#cd5bff"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     primer_bind     complement(1590..1610)
+                     /locus_tag="Primer Rpl35ALeft_S_R"
+                     /label="Primer Rpl35ALeft_S_R"
+                     /ApEinfo_label="Primer Rpl35ALeft_S_R"
+                     /ApEinfo_fwdcolor="#a273ff"
+                     /ApEinfo_revcolor="#cd5bff"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     primer_bind     complement(2259..2281)
+                     /locus_tag="Primer Rpl35ARight_S_R"
+                     /label="Primer Rpl35ARight_S_R"
+                     /ApEinfo_label="Primer Rpl35ARight_S_R"
+                     /ApEinfo_fwdcolor="#a273ff"
+                     /ApEinfo_revcolor="#cd5bff"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     primer_bind     complement(2496..2517)
+                     /locus_tag="Rpl35ARight_S2_R"
+                     /label="Rpl35ARight_S2_R"
+                     /ApEinfo_label="Rpl35ARight_S2_R"
+                     /ApEinfo_fwdcolor="#a273ff"
+                     /ApEinfo_revcolor="#cd5bff"
+                     /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
+                     width 5 offset 0"
+     misc_RNA        1746..1765
+                     /locus_tag="gRNA Target TADEr4(1)"
+                     /label="gRNA Target TADEr4(1)"
+                     /ApEinfo_label="gRNA Target TADEr4"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /ApEinfo_revcolor="#e1031e"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {} 0} width 5 offset 0"
+     misc_RNA        complement(1945..1964)
+                     /locus_tag="gRNA target TADEr4"
+                     /label="gRNA target TADEr4"
+                     /ApEinfo_label="gRNA target TADEr4"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /ApEinfo_revcolor="#eb0214"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {} 0} width 5 offset 0"
+     misc_RNA        complement(2046..2065)
+                     /locus_tag="gRNA Target TADEr4(2)"
+                     /label="gRNA Target TADEr4(2)"
+                     /ApEinfo_label="gRNA Target TADEr4"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /ApEinfo_revcolor="#eb0214"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {} 0} width 5 offset 0"
+ORIGIN
+        1 CTGCAGCTTC TTTCGGCGAT CAGTTCTCAG GTTCGGTTCG ATCTAGCAGG GCACATGTGC
+       61 TTCTAAATTT TGTGGCTGTC TCTAAAATCC CAACATTGTT ATGAACATTT TGATGTTGTT
+      121 TTCGGCACTG AAAAAAAACT CTATGCGATT GCGCGAGTCG GCGATAACCA CATTCGTTTG
+      181 TCGATAACAT TTCAGGGGCA AATCTGTCAG AATTTGTATT TAAATTTGAA AATAATTAAA
+      241 TCTGTAATCT AAATATAAAA CAAGAGATTA CAAGACTAGT TTTAGTCCAA TCAAGAACAA
+      301 TTATGTACAC CTTAGAGAAT CGAAGATGAC TTTTTCTGCG TTTTAATACG AATCTTGTAT
+      361 ACCCCATTAC TCTGCAGATA GTGTTACTTG CTTTTTCTAT TCAGCGGAAT AAATTTACCA
+      421 TATTAAAGGA TATATTTATC TATAATTTAT CCCTTTTATT CTTTAAAATG TGGTTATTTG
+      481 GCAAAAGCTT GGTAAAACTA AAAATGTAAA ATTACAGAAG AAAACAATTA TATTTAATAA
+      541 TTTCATACAT AAAGTTGAAT GTTAGAAAGG AACCATCTAA ATGAGCCTAA GCAGTTGTTT
+      601 TTTATAGTTT TAACAGAGAA GAGCATATGG TTTCTTCAAC CCGATTTAAA CTAACCCATG
+      661 TTTCGTATCT TGAGTATGCA TAAACTGTGA ATACAAATTA AAATTTAAAC AATGTATTGT
+      721 CTTATTTTTA CTAAGGGTTT TCTTTTCAAC TGAGGTTTAT TTTGCCCCTA ACAGCACACT
+      781 TTCGAGCAAC GGCGCGCTGT TTCACTTAAC ATATCGCGTT TTTGTGGCGT CTAGAGGCAG
+      841 CCACACTATT TCCTTCTTTT CGCTTTCGTT TCCGGCGAAG TAAGTAAATT AAATTTCTCT
+      901 GTATATTTTC CTTTAATAAT ATTCTGTTTT TGTTTTTAGC GGTGTTAATA CATTCATCGA
+      961 ACAACAAGGT GGGTTTCCGC GGACACCATA ATGGGAGTCT GTACACCGGA AAAACGGCAA
+     1021 ATAATCATGG AATAACCTGC AAACGCCAAC CCACGTGCAC AAAAATCTAC TGGCGAACTT
+     1081 TATCTGTGAT TTTTTGTGAC TAAGTGGTTC CTTGGGGACA ACCCAGGATA GGAGTACCCT
+     1141 ACTGGCAATG CCCGATTCGT AATAGCACCT CGATGCCGTC CAAAAGTTCC ATGCTTCGCA
+     1201 CAGTGCACAT TGATTGCAAA ATTTCAGCGT TCATTTTTGG CCTCCGCTTT TCTTGTTGTT
+     1261 TTTAACGTGA TTTCAATAAC TTCTTGTGGG AGATTAATAA GTGATCCGTG TTATCAGTTT
+     1321 TTGTTTTTAT CATTAAATGT TGCCCCAGGC CGGTCGGGTA CAGGCTTTCC TCGAATTTTC
+     1381 ACCAGACTCC GCTTTATTTT TATATAAAAT GATGTTTTTA ATGTACTGTT GCCCAGAGCT
+     1441 GTGCACCTCA ATATCTTCAA TGTTTAAAGT ACTTTTCGTT TGATCAAATG CATGCAAATG
+     1501 ATCGAAACCC TCAAGCCCCA ACGAATACCT ATGATGAATG CCTACGGCTC TAAAGATTAT
+     1561 CTTTTCTCAT CCACAGCTAA GCCATGGCCG ACACACAAGC CAAGTCCACT ACTGCGCCCA
+     1621 AGGCCGCCAA GGCCCAGAAG GCTCCCAAGG CCGTCAAGGC GCCTAAGGCC GAGAAGCCCG
+     1681 CCGCCTCAGA GGCTAAAGTT TCCGCCAAGA AGTACAAGCG TCACGGACGC CTCTTCGCCA
+     1741 AGGCCGTCTT CACCGGCTAC AAGCGTGGTC TGAGGAACCA GCACGAGAAC CAGGCCATCC
+     1801 TCAAGGTATG TCTATACTTC AATGTGATGG GTCCGGACTT CACAGAGTTT TTCAAATAAT
+     1861 AATTAATACA TTCCAGTTCT GTAAAAACAT TTTAGTAATG TAATTGATTA ACCAACATAT
+     1921 TACATTGCAG ATTGAGGGCG CCCGCCGCAA GGAGCACGGA TCCTTCTACG TTGGGAAGCG
+     1981 TTGCGTCTAT GTCTACAAGG CCGAGACCAA GAAGTGCGTG CCACAGCATC CCGAGCGCAA
+     2041 GACCCGCGTC CGCGCTGTCT GGGGCAAGGT CACCCGCATC CACGGCAACA CCGGCGCTGT
+     2101 GCGTGCCCGT TTCAACAGGA ACCTGCCCGG TCATGCCATG GGCCACCGCA TCCGCATCGT
+     2161 TAGTTCAAAC ACACCTTCTC TGTCCGACAA TTGGGTTGTA TTAACATGCC TTCTTTTTTC
+     2221 TTGCAGATGC TGTACCCATC AAGGATTTAA GTTAATATCC GACTTGAATT ACTGACCTGC
+     2281 AGGAGTAAAA AATCCGTTTT ACATTAAATG AAACACTTTA AATTTAATTA AAACGCAACT
+     2341 TGGCTTTTTT ATTAAGGCGA GATACCGATG GAAAGTTGAC GGTAATCTGT ATATCGATTG
+     2401 ATGGCTGTTC GGTTTGACTT TCCCTACTGC AATGAATTAT CTTTTGGCGG GACCATCCAC
+     2461 TTCGCATTAA AATCCATTTA TATTGATCTT AAGTAGCAGA TGAAGACGAT GGAAACGTTT
+     2521 TAGAGTACGA ATTGAATGTG GATTTCGAGA CTCTTGGCTA ATGTCGTTCC TTTAGATCAG
+     2581 ACATACCACT TCTACCACAA TAGATTTTAA TTAGTTTTGA AAATCTCAAA ACTATTTTTT
+     2641 GTATTGCCAA AGTCAACGAA TACTGTAGTG TGTACTACTA ACGAATCTTT TCGCAAGGAC
+     2701 ACTAGGGGTG TATGGCGTAG CCTTTCTGCT CGAAAATCAT ACGAATTCAA GTTTCTGTTA
+     2761 ATCAACAATG CGGTTTCTAA AAAAAATCAA GGAAATGGTT TCATAGTAAT CAAGTTTTTT
+     2821 AAAAAGAATA AATGTAATAA ACGTTTCTAT ATTATGACGA ATATACCACC TAACATATTT
+     2881 TTAGAAGGTA GAGCATATTT AAATTAAAGT AATGTTTGAA TTTCATTTGG TATGTGTCAG
+     2941 AATTATAGCC GAATAGAATT TATTTTTAAA ACACGTCGAA TAATAGAAGT ATTCAATAAG
+     3001 AGATGAGATG GAAATAATAC TTCATCTACT TTAATAATTA TTGTTAAGTT GTCCCTATTT
+     3061 GTGTCAAAAC ATGGGCGTCA AACATTGTTT TAAATTAGTT ACTGGAAAAG TTTAAAATAG
+     3121 TAAAACCTTA GTGAAACTGT TCCCACCGTG TGTATTTTTT TGGTACTTTT AGGTAATGAC
+     3181 GAAATAAACT GTATTGTGGT GTCATCTGTT ATTTTAAGGC TGTCAAAACG CGGTCACACT
+     3241 TGCAATCGCG CGTTTTGCGG CCCAATCGGA ACAAAAACAT AAACTGACCA GTTTTAGTGG
+     3301 ATTTAAATAG TAAAACCTTA GTGAAACTGT TCCCACCGTG TGTATTTTTT TGGTACTTTT
+     3361 AGGTAATGAC GAAATAAACT GTATTGTGGT GTCATCTGTT ATTTTAAGGC TGTCAAAACG
+     3421 CGGTCACACT TGCAATCGCG CGTTTTGCGG CCCAATCGGA ACAAAAACAT AAACTGACCA
+     3481 GTTTTAGTGG ATTTAAATAG TGGAGTTGCG ATTGATTGCT GCAGGAGCCA TCGAGAGTGA
+     3541 TGCGGAGATG TGCGCCGACC TTGCCGGGAG CCACTGCCGC CGCTGTTCCA CCAACCGACC
+     3601 CCCCGAAGTG AGGTCAACAC GTCACCGTTC GAACCAATTA GAGACTTGCA TTTCTGCACC
+     3661 GTTCCCCGCG TCCGATCGCC AACGACCAGG ATTACGTTAT ATGCGCGTAC GATGCAGGAC
+     3721 GACCTGGATG GCATCGTGAG GCATCGTCGC CGGAGCCTGA GCTTCCTGCA GATCGTCACG
+     3781 CTCACTATGG CCGGCCTGGT GGCTTTCGAT CCCGCCCAGG TGCTAGCTGG GCACCCAACT
+     3841 ACTGATTCGG AGCTCCAGAC TG   
+//
