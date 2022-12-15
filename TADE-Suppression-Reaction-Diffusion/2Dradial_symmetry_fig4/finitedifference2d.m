@@ -1,7 +1,7 @@
 function data=finitedifference2d(radius,ss)
 dr=0.1;dt=.01;
 r=0:dr:40;t=0:dt:50;
-beta=10;
+beta=5;
 lambda=beta-1;gamma=beta-1;
 D=0.1;s=1;
 X1=zeros(length(t),length(r));
