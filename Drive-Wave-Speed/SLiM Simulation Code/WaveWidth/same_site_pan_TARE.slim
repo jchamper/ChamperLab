@@ -12,9 +12,8 @@
 
 //these constants may change based on cluster runs
 initialize() {
-	defineConstant("CAPACITY", 10000);
-	defineConstant("DRIVE_FITNESS_VALUE", 1.0);
-	defineConstant("DROP_SIZE", 1000);
+	defineConstant("CAPACITY", 100000);
+	defineConstant("DROP_SIZE", 10000);
 	defineCfgParam("EMBRYO_RESISTANCE_RATE", 1.00);
 	defineCfgParam("GERMLINE_RESISTANCE_RATE", 1.00);
 	defineConstant("HETEROZYGOUS_DROP", T);
@@ -22,8 +21,8 @@ initialize() {
 	defineConstant("NUM_GRNAS", 1);
 	defineConstant("TADE",F);
 	defineConstant("TADE_SUPPRESSION", F);
-	defineConstant("TADE_DOUBLE_RESCUE",T);
-	defineConstant("TARE", F);
+	defineConstant("TADE_DOUBLE_RESCUE",F);
+	defineConstant("TARE", T);
 	defineConstant("TADS_AUTOSOMAL_SUPPRESSION", F);
 	defineConstant("TADS_MODIFICATION", F);
 	defineConstant("R1_OCCURRENCE_RATE", 0.0);
@@ -36,7 +35,12 @@ initialize() {
 	defineConstant("FEMALE_ONLY_DROP", F);
 	defineConstant("MALE_ONLY_PROMOTER", F);
 	defineConstant("NUM_CUT_PHASES", 1);
-	defineConstant("R2_FITNESS_VALUE", 1.0);
+	
+	// Fitness parameters:
+	defineCfgParam("DD_FITNESS_VALUE", 1.00);
+	defineCfgParam("DX_FITNESS_VALUE", sqrt(DD_FITNESS_VALUE));
+	defineCfgParam("SOMATIC_FITNESS_MUTLIPLIER_F", 1.00);
+	defineCfgParam("SOMATIC_FITNESS_MUTLIPLIER_M", 1.00);
 	
 	//Below are dimensioal sets.
 	defineConstant("REPRISING_BOUNDARIES", T);
@@ -46,14 +50,8 @@ initialize() {
 	defineConstant("FEMALE_SPEED", SPEED);
 	defineConstant("MATING_DISTANCE", SPEED);
 	defineConstant("EXPECTED_ADULT_COMPETITION", CAPACITY*DENSITY_INTERACTION_DISTANCE);
-	defineCfgParam("GROWTH_AT_ZERO_DENSITY",2.00);
+	defineCfgParam("GROWTH_AT_ZERO_DENSITY",6.00);
 	
-   defineCfgParam("DD_FITNESS_VALUE", 0.50);
-   defineCfgParam("DX_FITNESS_VALUE", sqrt(DD_FITNESS_VALUE));
-   defineCfgParam("SOMATIC_FITNESS_MUTLIPLIER_F", 1.00);
-   defineCfgParam("SOMATIC_FITNESS_MUTLIPLIER_M", 1.00);
-
-
 	
 	// For mortality rate as a function of age:
 	// Some females are allowed to survive two generations:
@@ -61,7 +59,7 @@ initialize() {
 	
 	// This simulation will use a non-Wright-Fisher model.
 	initializeSLiMModelType("nonWF");
-
+	
 	// This simulation will take place across continuous space.
 	if (ONE_DIMENSIONAL) {
 		if (REPRISING_BOUNDARIES)
@@ -101,8 +99,8 @@ initialize() {
 }
 
 function (void) defineCfgParam(string$ name, lifs value) {
-    if (!exists(name))
-        defineConstant(name, value);
+	if (!exists(name))
+		defineConstant(name, value);
 }
 
 
@@ -226,42 +224,43 @@ function (void)copy_genome(o<Genome>$ source, o<Genome>$ destination) {
 }
 
 
+
 //// RULES FOR FITNESS BASED ON GENOTYPE.
 function (f$)genotypeFitness(o<Individual>$ ind) {
-    // Representation of the value of the two chromosomes.
-    fitness_value = 1.0;
-
-    // Check both chromosomes for drive and type 2 resistance allele.
-    // These are the only variants that affect fitness.
-    drive_on_1 = ind.genome1.countOfMutationsOfType(m2) == NUM_GRNAS;
-    drive_on_2 = ind.genome2.countOfMutationsOfType(m2) == NUM_GRNAS;
-    res2_on_1 = ind.genome1.countOfMutationsOfType(m4) > 0;
-    res2_on_2 = ind.genome2.countOfMutationsOfType(m4) > 0;
-    wt_1 = ind.genome1.countOfMutationsOfType(m1) > 0;
-    wt_2 = ind.genome2.countOfMutationsOfType(m1) > 0;
-
-    somatic_fitness_mult = 1;
-    if (ind.sex == "F")
-        somatic_fitness_mult = SOMATIC_FITNESS_MUTLIPLIER_F;
-    if (ind.sex == "M")
-        somatic_fitness_mult = SOMATIC_FITNESS_MUTLIPLIER_M;
-    // Check both chromosomes for the drive.
-    if (drive_on_1) {
-        fitness_value = DX_FITNESS_VALUE;
-        if (wt_1 | wt_2)
-            fitness_value = fitness_value * somatic_fitness_mult;
-    }
-    if (drive_on_2) {
-        fitness_value = DX_FITNESS_VALUE;
-        if (wt_1 | wt_2)
-            fitness_value = fitness_value * somatic_fitness_mult;
-    }
-    if (drive_on_1 & drive_on_2)
-        fitness_value = DD_FITNESS_VALUE;
-
-
-    // Return fitness for individual with this genotype.
-    return fitness_value;
+	// Representation of the value of the two chromosomes.
+	fitness_value = 1.0;
+	
+	// Check both chromosomes for drive and type 2 resistance allele.
+	// These are the only variants that affect fitness.
+	drive_on_1 = ind.genome1.countOfMutationsOfType(m2) == NUM_GRNAS;
+	drive_on_2 = ind.genome2.countOfMutationsOfType(m2) == NUM_GRNAS;
+	res2_on_1 = ind.genome1.countOfMutationsOfType(m4) > 0;
+	res2_on_2 = ind.genome2.countOfMutationsOfType(m4) > 0;
+	wt_1 = ind.genome1.countOfMutationsOfType(m1) > 0;
+	wt_2 = ind.genome2.countOfMutationsOfType(m1) > 0;
+	
+	somatic_fitness_mult = 1;
+	if (ind.sex == "F")
+		somatic_fitness_mult = SOMATIC_FITNESS_MUTLIPLIER_F;
+	if (ind.sex == "M")
+		somatic_fitness_mult = SOMATIC_FITNESS_MUTLIPLIER_M;
+	// Check both chromosomes for the drive.
+	if (drive_on_1) {
+		fitness_value = DX_FITNESS_VALUE;
+		if (wt_1 | wt_2)
+			fitness_value = fitness_value * somatic_fitness_mult;
+	}
+	if (drive_on_2) {
+		fitness_value = DX_FITNESS_VALUE;
+		if (wt_1 | wt_2)
+			fitness_value = fitness_value * somatic_fitness_mult;
+	}
+	if (drive_on_1 & drive_on_2)
+		fitness_value = DD_FITNESS_VALUE;
+	
+	
+	// Return fitness for individual with this genotype.
+	return fitness_value;
 }
 
 
@@ -300,9 +299,8 @@ reproduction(NULL, "F") {
 	}
 	// Mate has now been selected. 	
 	
-	// Fitness based on density, for density dependant fecundity.
 	n_1 = all_neighbors[abs(all_neighbors.x - individual.x) <= DENSITY_INTERACTION_DISTANCE];
-	adult_density_force = length(n_1) - sum(i1.interactionDistance(individual,n_1))*(1/DENSITY_INTERACTION_DISTANCE);	
+	adult_density_force = length(n_1) - sum(i1.interactionDistance(individual,n_1))*(1/DENSITY_INTERACTION_DISTANCE);
 	competition_ratio = adult_density_force / EXPECTED_ADULT_COMPETITION;
 	actual_competition_factor = GROWTH_AT_ZERO_DENSITY/ ((GROWTH_AT_ZERO_DENSITY-1) * competition_ratio + 1);
 	
@@ -321,7 +319,7 @@ reproduction(NULL, "F") {
 				num_offspring = 0;
 	}
 	
-for (i in seqLen(num_offspring)) {
+	for (i in seqLen(num_offspring)) {
 		// Add offspring to the subpopulation.
 		offspring = subpop.addCrossed(individual, selected_mate);
 		if (!isNULL(offspring))
@@ -395,12 +393,12 @@ for (i in seqLen(num_offspring)) {
 	if (!(TADS_MODIFICATION|TADS_AUTOSOMAL_SUPPRESSION)) {
 		// Apply effects that happen in the germline.
 		if (!MALE_ONLY_PROMOTER)
-			germline(childGenome1, parent1, GERMLINE_RESISTANCE_RATE);
-		germline(childGenome2, parent2, GERMLINE_RESISTANCE_RATE);
+			germline(child.genome1, parent1, GERMLINE_RESISTANCE_RATE);
+		germline(child.genome2, parent2, GERMLINE_RESISTANCE_RATE);
 		
 		// Apply effects that happen in the embryo.
 		if (!MALE_ONLY_PROMOTER)
-			embryo(childGenome1, childGenome2, parent1);
+			embryo(child.genome1, child.genome2, parent1);
 	}
 	
 	// If the drive is x-linked, prevent gene drive mechanics on Y chromosome by resetting it:
@@ -445,8 +443,8 @@ early() {
 }
 
 late() {
-	i1.evaluate();
-	i2.evaluate();
+	i1.evaluate(sim.subpopulations);
+	i2.evaluate(sim.subpopulations);
 }
 
 //// SURVIVAL RULES FOR THE SIMULATION BASED ON AGE
@@ -457,7 +455,7 @@ late() {
 	all[all.sex=="M"].fitnessScaling = 0.0;
 	
 	//Females may survive to the next generation at the rate specified by user.
-
+	
 	females = all[all.sex=="F"];
 	females[females.age > 0].fitnessScaling = 0.0;
 	females[females.age==0].fitnessScaling = RATE_FEMALES_SURVIVE;
@@ -467,15 +465,15 @@ late() {
 	// Surviving individuals move
 	for (ind in surviving_inds) {
 		if (REPRISING_BOUNDARIES) {
-				do position = ind.spatialPosition + rnorm(1, 0, FEMALE_SPEED);
-				while (!ind.subpopulation.pointInBounds(position));
-				ind.setSpatialPosition(position);
+			do position = ind.spatialPosition + rnorm(1, 0, FEMALE_SPEED);
+			while (!ind.subpopulation.pointInBounds(position));
+			ind.setSpatialPosition(position);
 		} else {
 			// Toroidal world movement.
-				ind.x = ind.x + rnorm(1, 0, FEMALE_SPEED);
-				ind.setSpatialPosition(p1.pointPeriodic(ind.spatialPosition));
+			ind.x = ind.x + rnorm(1, 0, FEMALE_SPEED);
+			ind.setSpatialPosition(p1.pointPeriodic(ind.spatialPosition));
 		}
-	}	
+	}
 }
 
 
@@ -487,8 +485,8 @@ late() {
 	all.genomes.addNewDrawnMutation(m1,seqLen(NUM_GRNAS));
 	all.x=p1.pointUniform(CAPACITY);
 	sim.setValue("timer", "start");
-	
-	}
+
+}
 
 
 //// DROP A GROUP OF MODIFIED INDIVIDUALS INTO THE POPULATION.
@@ -519,59 +517,18 @@ late() {
 	// Move all the individuals from the drop into p1:
 	p1.takeMigrants(drop);
 	drop.x = runif(DROP_SIZE, 0, DROP_RADIUS);
-   p2.removeSubpopulation();
+	p2.removeSubpopulation();
 }
 
 
 //// PROGRAM OUTPUT.
 10:late() {
-	// Population size
 	all = sim.subpopulations.individuals;
-	pop_size = length(all);
-	males = all[all.sex=="M"];
-	num_males = length(males);
-	females = all[all.sex=="F"];
-	num_females = length(females);
-	
-	//Count of chromosomes
-	num_y = num_males;
-	num_x = 2*num_females + num_males;
-	num_autosomal_chromosomes = 2*pop_size;
-	
-	//Allele counts
-	num_wt = sum(all.genomes.countOfMutationsOfType(m1)==NUM_GRNAS);
-	num_dr = sum(all.genomes.countOfMutationsOfType(m2)==NUM_GRNAS);
-	num_has_drive = sum(all.countOfMutationsOfType(m2) >= NUM_GRNAS);
-	rate_has_drive = num_has_drive/pop_size;
-	this_gen=sim.generation-10;
-	target=all[all.countOfMutationsOfType(m2) != 0];
-	tx=target.x;
-	catn("generation:"+this_gen);
+	this_gen = sim.cycle-10;
 	n=0;
-	do{
-		if(any((all.x > (n/10)) & (all.x <= ((n+1)/10)))){
-				if(any((tx <= (n+1)/10) & (tx > (n/10)))){
-					slice_x1= (tx >(n/10) ) & (tx <= ((n+1)/10));
-					slice1=target[slice_x1];
-					num_x1=(all.x > (n/10)) & (all.x < ((n+1)/10));
-					num_x1_1 = all[num_x1];
-					num_x_1 = length(num_x1_1);
-					num_dr_1 = sum(slice1.genomes.countOfMutationsOfType(m2)==NUM_GRNAS);
-					rate_dr_1 = num_dr_1/(2*num_x_1);
-					n=n+1;
-					catn("SLICE"+n+":"+rate_dr_1);
-				}
-				else{
-					n=n+1;
-					catn("SLICE"+n+":0");				
-				}
-		}
-		else{
-				n=n+1;
-				catn("SLICE"+n+":N/A");
-		}
-   }while(n<10);
-  
+	catn("MARKER");
+	target=all[all.countOfMutationsOfType(m2)!=0];
+	tx=target.x;	
 	slice_x3= (tx >0.2) & (tx <= 0.3);
 	slice3=target[slice_x3];
 	num_x3=(all.x > 0.2) & (all.x < 0.3);
@@ -579,17 +536,13 @@ late() {
 	num_x_3 = length(num_x3_1);
 	num_dr_3 = sum(slice3.genomes.countOfMutationsOfType(m2)==NUM_GRNAS);
    rate_dr_3 = num_dr_3/(2*num_x_3);
-   
-   
 	timer = sim.getValue("timer");
-	
-
-	
 	//only start timer once
 	if (rate_dr_3 >= BAR) {
 		if (timer == "start") {
-			thisgen=sim.generation-10;
-			catn("STARTING_GENS:" +thisgen);
+			thisgen=sim.cycle-10;
+			catn("STARTING_TIMER_AT:" + thisgen);
+			catn("STARTING_FREQUENCY:"+rate_dr_3);
 			sim.setValue("timer", thisgen);
 		}
 	}
@@ -604,22 +557,66 @@ late() {
 	
 	if (rate_dr_8 >= BAR) {
 		start_gen = sim.getValue("timer");
-		this_gen = sim.generation-10;
+		this_gen = sim.cycle-10;
 		gens_elapsed = this_gen - start_gen;
-		catn("FITNESS:"+ DD_FITNESS_VALUE);
-		catn("GROWTH:"+ GROWTH_AT_ZERO_DENSITY);
-		catn("STOPPING_GENS:" + this_gen);
-		catn("TIMED_GENS:" + gens_elapsed);
+		catn("STOPPING_TIMER_AT:" + this_gen);
+		catn("STOPPING_FREQUENCY:"+rate_dr_8);
+	}	
+	
+	
+	if(rate_dr_3 >= 0.5 & rate_dr_8 <= 0.5){
+		catn("generation:"+this_gen);
+		do{
+			if(any((all.x > (n/50)) & (all.x <= ((n+1)/50))))
+			{
+				all_slice_helper =(all.x > (n/50)) & (all.x < ((n+1)/50));
+				all_slice = all[all_slice_helper];
+				Drive_Heterozygotes = all_slice[(all_slice.countOfMutationsOfType(m2)
+					== 1 & all_slice.countOfMutationsOfType(m4) == 1)|(all_slice.countOfMutationsOfType(m1)
+					== 1 & all_slice.countOfMutationsOfType(m2) == NUM_GRNAS)];
+				Wild_Homozygotes = all_slice[all_slice.countOfMutationsOfType(m1) == 2];
+				Drive_Homozygotes = all_slice[all_slice.countOfMutationsOfType(m2)
+					== 2*NUM_GRNAS];
+				R2_Homozygotes = all_slice[all_slice.countOfMutationsOfType(m4) == 2];
+				R2_Heterozygotes = all_slice[(all_slice.countOfMutationsOfType(m1)
+					== 1 & all_slice.countOfMutationsOfType(m4) == 1)];
+				
+				dr_dr = sum(Drive_Heterozygotes.genomes.countOfMutationsOfType(m2)==NUM_GRNAS);
+				dr_wt = sum(Drive_Heterozygotes.genomes.countOfMutationsOfType(m1)==1);
+				wt_wt = sum(Wild_Homozygotes.genomes.countOfMutationsOfType(m1)==1);
+				dr_dr_1 = sum(Drive_Homozygotes.genomes.countOfMutationsOfType(m2)==NUM_GRNAS);
+				R2_R2 = sum(R2_Homozygotes.genomes.countOfMutationsOfType(m4)==1);
+				R2_WT = sum(R2_Heterozygotes.genomes.countOfMutationsOfType(m1)==1);
+				R2_R2_1 = sum(R2_Heterozygotes.genomes.countOfMutationsOfType(m4)==1);
+				LEFT=n/50;
+				RIGHT=(n+1)/50;
+				CORE = (LEFT + RIGHT)/2;
+				drive_carrier_freq = (length(Drive_Heterozygotes)+length(Drive_Homozygotes))/length(all_slice);
+				catn("POSITION:"+CORE+":DRIVE_CARRIER_FREQUENCY:"+drive_carrier_freq);
+				n=n+1;
+				if(n==50)
+					catn("#######");
+			}
+			else{
+				LEFT=n/50;
+				RIGHT=(n+1)/50;
+				CORE = (LEFT + RIGHT)/2;
+				catn("POSITION:"+CORE+":DRIVE_CARRIER_FREQUENCY:NULL");
+				n=n+1;
+				if(n==50)
+					catn("#######");
+			}
+		}while(n<50);
+	
+	}
+	if(rate_dr_8 > 0.5)
 		sim.simulationFinished();
-	}			
+
 }
 
 
 //// PROGRAM END CONDITION.
 210 late() {
-		catn("TIMED_GENS:200");
-		catn("FITNESS:"+ DD_FITNESS_VALUE);
-		catn("GROWTH:"+ GROWTH_AT_ZERO_DENSITY);
-		sim.simulationFinished();
+	sim.simulationFinished();
 }
 

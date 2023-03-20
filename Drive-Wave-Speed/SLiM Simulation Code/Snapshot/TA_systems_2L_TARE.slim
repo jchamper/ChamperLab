@@ -945,7 +945,7 @@ late() {
 }
 
 //// START THE SIMULATION BY ADDING AN INITIAL WILD POPULATION.
-1 {
+1 early() {
     // Start with a population of wild type flies.
     sim.addSubpop("p1", CAPACITY);
     all = p1.individuals;
@@ -959,7 +959,7 @@ late() {
 }
 
 //// DROP A GROUP OF MODIFIED INDIVIDUALS INTO THE POPULATION.
-11: {
+11: early() {
     if (asInteger(sim.generation) == 11 | (MUTLIPLE_DROPS & ((asInteger(sim.generation) - 11) % DROP_INTERVAL == 0))) {
         if (!MAX_NUMBER_OF_DROPS | asInteger(sim.generation) <= 11 + DROP_INTERVAL * (MAX_NUMBER_OF_DROPS - 1)) {
             // Drive will be added this generation. Default size of drop is DROP_SIZE.

@@ -1,18 +1,21 @@
 initialize() {
 	// Fitness parameters:
 	// Fitness parameters:
-	defineCfgParam("DD_FITNESS_VALUE", 1.00);
+	defineCfgParam("DD_FITNESS_VALUE", 1.0);
 	defineCfgParam("DX_FITNESS_VALUE", sqrt(DD_FITNESS_VALUE));
 	defineCfgParam("SOMATIC_FITNESS_MUTLIPLIER_F", 1.0);
 	defineCfgParam("SOMATIC_FITNESS_MUTLIPLIER_M", 1.0);
 	defineCfgParam("DRIVE_EFFICIENCY",1.00);
 	
 	// Drive type:
-	defineConstant("W_SHREDDER",T);
+	defineConstant("Y_SHREDDER",T);
+	
+	// General drive parameters:
+	//defineConstant("NUM_GRNAS", 1);
 	
 	// Ecology and drop parameters:
 	defineConstant("CAPACITY", 100000);
-	defineConstant("DROP_SIZE", 10000);
+	defineConstant("DROP_SIZE", 1000);
 	
 	//Below are dimensioal sets.
 	defineConstant("ONE_DIMENSIONAL", T);
@@ -44,7 +47,6 @@ initialize() {
 		initializeInteractionType(1, "x", reciprocal=T, maxDistance=MATING_DISTANCE);
 		initializeInteractionType(2, "x", reciprocal=T,   maxDistance=DENSITY_INTERACTION_DISTANCE);
 	}
-	i2.setInteractionFunction("l", 1.0);
 	
 	
 	// Four variations: Wild type, drive, r1 resistance, r2 resistance.
@@ -126,7 +128,7 @@ function (f$)genotypeFitness(o<Individual>$ ind) {
 	if (ind.sex == "M")
 		somatic_fitness_mult = SOMATIC_FITNESS_MUTLIPLIER_M;
 	// Check both chromosomes for the drive.
-	if(ind.sex == "M"){
+	if(ind.sex == "F"){
 		if (drive_on_1) {
 			fitness_value = DX_FITNESS_VALUE;
 			if (wt_1 | wt_2)
@@ -142,8 +144,8 @@ function (f$)genotypeFitness(o<Individual>$ ind) {
 		// Return fitness for individual with this genotype.
 		return fitness_value;
 	}
-	if(ind.sex == "F"){
-		if(drive_on_2)
+	if(ind.sex == "M"){
+		if(drive_on_1)
 			fitness_value = DD_FITNESS_VALUE;
 		return fitness_value;
 	}
@@ -190,16 +192,18 @@ reproduction(NULL, "F") {
 	// Number of offspring number based on binomial distrobution.
 	
 	n_1 = all_neighbors[abs(all_neighbors.x - individual.x) <= DENSITY_INTERACTION_DISTANCE];
-	adult_density_force = i2.totalOfNeighborStrengths(individual);
+	adult_density_force = length(n_1) - sum(i1.interactionDistance(individual,n_1))*(1/DENSITY_INTERACTION_DISTANCE);
 	competition_ratio = adult_density_force / EXPECTED_ADULT_COMPETITION;
 	actual_competition_factor = GROWTH_AT_ZERO_DENSITY/ ((GROWTH_AT_ZERO_DENSITY-1) * competition_ratio + 1);
 	p = genotypeFitness(individual) * actual_competition_factor * 0.04 / (1 + RATE_FEMALES_SURVIVE);
 	num_offspring = rbinom(1, 50, p);
+	
 	for (i in seqLen(num_offspring)) {
 		// Add offspring to the subpopulation.
-		if (W_SHREDDER & individual.countOfMutationsOfType(m2)>0)
-			offspring = subpop.addCrossed(individual, selected_mate, (0.5 /(0.5*(2 - DRIVE_EFFICIENCY))));
-		if(individual.countOfMutationsOfType(m2) == 0)
+		if (Y_SHREDDER & selected_mate.countOfMutationsOfType(m2))
+			// Add individuals with a biased sex ratio.
+			offspring = subpop.addCrossed(individual, selected_mate, 1-(0.5 /(0.5*(2 - DRIVE_EFFICIENCY))));
+		else
 			offspring = subpop.addCrossed(individual, selected_mate);
 		
 		if (!isNULL(offspring))
@@ -235,28 +239,21 @@ reproduction(NULL, "F") {
 
 
 
-////// GENE DRIVE IMPLEMENTATION RULES THAT OCCUR IN EVERY CHILD.
+//// GENE DRIVE IMPLEMENTATION RULES THAT OCCUR IN EVERY CHILD.
 1: modifyChild() {
-	if (W_SHREDDER) {
-		// Genome1 is the Z, Genome2 is the W in females.
-		if(parent1.sex == "F"){
-			mother = parent1;
-			father = parent2;
+	// If the drive is x-linked, prevent it from being inherited on Y chromosome:
+	if (Y_SHREDDER) {
+		// Genome1 is the X, Genome2 is the Y in males.
+		if (child.sex == "F") {
+			// Force inheritence of X from father.
+			if (parent2.genome1.countOfMutationsOfType(m1))
+				child.genome2.addNewDrawnMutation(m1, 0);
+			if (parent2.genome1.countOfMutationsOfType(m2))
+				child.genome2.addNewDrawnMutation(m2, 0);
 		}
-		else{
-			mother = parent2;
-			father = parent1;
-		}
-		if (child.sex == "M") {
-			// Force inheritence of Z from mother.
-			if (mother.genome2.countOfMutationsOfType(m1) > 0)
-				childGenome1.addNewDrawnMutation(m1, 0);
-			if (mother.genome2.countOfMutationsOfType(m2) > 0)
-				childGenome1.addNewDrawnMutation(m2, 0);
-		}
-		if (child.sex == "F")
-			// Force inheritence of W from mother. The only possible variation for W is wt.
-			childGenome1.addNewDrawnMutation(m1, 0);
+		if (child.sex == "M")
+			// Force inheritence of Y from father. The only possible variation for Y is wt.
+			child.genome2.addNewDrawnMutation(m1, 0);
 	}
 	return T;
 }
@@ -275,8 +272,8 @@ early() {
 
 //// EVALUATE SPATIAL INTERACTIONS BETWEEN INDIVIDUALS FOR OTHER FUNCTIONS.
 late() {
-	i1.evaluate();
-	i2.evaluate();
+	i1.evaluate(sim.subpopulations);
+	i2.evaluate(sim.subpopulations);
 }
 
 //// START THE SIMULATION BY ADDING AN INITIAL WILD POPULATION.
@@ -293,49 +290,103 @@ late() {
 10 early() {
 	// Add a drop of modified individuals to p1.
 	
-	sim.addSubpop("p2", DROP_SIZE,1.0);
+	sim.addSubpop("p2", DROP_SIZE,0.0);
 	drop = p2.individuals;
 	drop.genome1.addNewDrawnMutation(m2, 0);
-	drop.genome2.addNewDrawnMutation(m1, 0);
 	// Now that genes have been set, move all the individuals from the drop into p1:
+	
 	drop.x = runif(DROP_SIZE, 0, DROP_RADIUS);
 	p1.takeMigrants(drop);
 	p2.removeSubpopulation();
 }
 
 //// PROGRAM OUTPUT.
-10:late() {
-	all = sim.subpopulations.individuals;
-	this_gen = sim.generation-10;
-	n=0;
+late() {
 	catn("MARKER");
-	if(rate_dr_3 >= 0.5 & rate_dr_8 <= 0.5){
+	all = sim.subpopulations.individuals;
+	this_gen = sim.cycle-10;
+	males = all[all.sex=="M"];
+	target=all[all.countOfMutationsOfType(m2)!=0];
+	tx=target.x;
+	slice_x3= (tx >0.2) & (tx <= 0.3);
+	slice3=target[slice_x3];
+	num_x3=(all.x > 0.2) & (all.x < 0.3);
+	num_x3_1 = all[num_x3];
+	num_x_3 = length(num_x3_1);
+	num_dr_3 = sum(slice3.genomes.countOfMutationsOfType(m2));
+	male_x3=(males.x > 0.2) & (males.x < 0.3);
+	males_x3_1=males[male_x3];
+	num_males_3=length(males_x3_1);
+	num_females_3=num_x_3-num_males_3;
+	rate_dr_3 = num_dr_3/(2*num_x_3-num_males_3);	
+	timer = sim.getValue("timer");	
+	//only start timer once
+	if (rate_dr_3 >= BAR) {
+		if (timer == "start") {
+			start_gen = sim.getValue("timer");
+			this_gen = sim.cycle-10;
+			catn("STARTING_TIMER_AT:" + this_gen);
+			catn("STARTING_FREQUENCY:"+rate_dr_3);
+			sim.setValue("timer", this_gen);
+		}
+	}
+	
+	slice_x8= (tx >0.7) & (tx <= 0.8);
+	slice8=target[slice_x8];
+	num_x8=(all.x > 0.7) & (all.x < 0.8);
+	num_x8_1 = all[num_x8];
+	num_x_8 = length(num_x8_1);
+	num_dr_8 = sum(slice8.genomes.countOfMutationsOfType(m2));
+	male_x8=(males.x > 0.7) & (males.x < 0.8);
+	males_x8_1=males[male_x8];
+	num_males_8=length(males_x8_1);
+	num_females_8=num_x_8-num_males_8;
+	rate_dr_8 = num_dr_8/(2*num_x_8-num_males_8);
+	
+	if (rate_dr_8 >= BAR) {
+		start_gen = sim.getValue("timer");
+		this_gen = sim.cycle-10;
+		gens_elapsed = this_gen - start_gen;
+		catn("STOPPING_TIMER_AT:" + this_gen);
+		catn("STOPPING_FREQUENCY:"+rate_dr_8);
+	}
+	
+	n=0;
+	if((rate_dr_3 >= 0.5 |rate_dr_3 == 'NAN') & rate_dr_8 <= 0.5){
 		catn("generation:"+this_gen);
 		do{
 			if(any((all.x > (n/50)) & (all.x <= ((n+1)/50))))
 			{
 				all_slice_helper =(all.x > (n/50)) & (all.x < ((n+1)/50));
 				all_slice = all[all_slice_helper];
-				males = all_slice[all_slice.sex=="M"];
-				females = all_slice[all_slice.sex=="F"];
+				Females = all_slice[all_slice.sex == "F"];
+				Males = all_slice[all_slice.sex == "M"];
 				
-				Drive_homo = all_slice[all_slice.countOfMutationsOfType(m2)
-					== 2];
-				One_drive_females = females[females.countOfMutationsOfType(m2)==1];
-				One_drive_males = males[males.countOfMutationsOfType(m2)==1];
-				Wild_homo = all_slice[all_slice.countOfMutationsOfType(m1)
-					== 2];
-				number = size(Drive_homo)+size(One_drive_females)+size(One_drive_males)+size(Wild_homo)-size(all_slice);
+				Drive_Males = Males[Males.genome1.countOfMutationsOfType(m2) == 1];
+				Wild_Males = Males[Males.genome1.countOfMutationsOfType(m1) == 1];
+				
+				dr_males = sum(Drive_Males.genome1.countOfMutationsOfType(m2)== 1);
+				wt_males = sum(Wild_Males.genome1.countOfMutationsOfType(m1)== 1);
+				
+				Drive_Heterozygotes_Females =																									Females[(Females.genome1.countOfMutationsOfType(m2) == 1 &													Females.genome2.countOfMutationsOfType(m1) == 1) |															   (Females.genome1.countOfMutationsOfType(m1) == 1 &															   Females.genome2.countOfMutationsOfType(m2) == 1) ];
+				Drive_Homozygotes_Females =
+					Females[Females.genome1.countOfMutationsOfType(m2) == 1 &												   Females.genome2.countOfMutationsOfType(m2) == 1];
+				Wild_Homozygotes_Females =
+					Females[Females.genome1.countOfMutationsOfType(m1) == 1 &												   Females.genome2.countOfMutationsOfType(m1) == 1];
+				
+				dr_female_dr_herer =																												sum(Drive_Heterozygotes_Females.genomes.countOfMutationsOfType(m2)== 1);
+				wt_female_dr_herer = 																											sum(Drive_Heterozygotes_Females.genomes.countOfMutationsOfType(m1)== 1);
+				dr_female_dr_homo =																												sum(Drive_Homozygotes_Females.genomes.countOfMutationsOfType(m2)== 1);
+				wt_female_dr_homo =																												sum(Wild_Homozygotes_Females.genomes.countOfMutationsOfType(m1)== 1);
 				LEFT=n/50;
 				RIGHT=(n+1)/50;
 				CORE = (LEFT + RIGHT)/2;
-				drive_carrier_freq = (length(Drive_homo)+length(One_drive_females)+length(One_drive_males))/length(all_slice);
+				
+				drive_carrier_freq = (length(Drive_Males)+length(Drive_Heterozygotes_Females)+length(Drive_Homozygotes_Females))/length(all_slice);
 				catn("POSITION:"+CORE+":DRIVE_CARRIER_FREQUENCY:"+drive_carrier_freq);
 				n=n+1;
 				if(n==50)
 					catn("#######");
-				
-			
 			}
 			else{
 				LEFT=n/50;
@@ -346,8 +397,7 @@ late() {
 				if(n==50)
 					catn("#######");
 			}
-		}while(n<50);
-	
+		}while(n<50);	
 	}
 	if(rate_dr_8 > 0.5)
 		sim.simulationFinished();
@@ -355,8 +405,5 @@ late() {
 
 //// PROGRAM END CONDITION.
 510 late() {
-	catn("FITNESS:"+ DD_FITNESS_VALUE);
-	catn("GROWTH:"+ GROWTH_AT_ZERO_DENSITY);
-	catn("TIMED_GENS:500");
 	sim.simulationFinished();
 }

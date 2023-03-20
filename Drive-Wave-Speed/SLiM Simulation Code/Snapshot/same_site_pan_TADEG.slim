@@ -477,7 +477,7 @@ late() {
 
 
 //// START THE SIMULATION BY ADDING AN INITIAL WILD POPULATION.
-1 {
+1 early() {
 	// Start with a population of wild type flies.
 	sim.addSubpop("p1", CAPACITY);
 	all= p1.individuals;
@@ -489,7 +489,7 @@ late() {
 
 
 //// DROP A GROUP OF MODIFIED INDIVIDUALS INTO THE POPULATION.
-10 {
+10 early() {
 	// Add a drop of modified individuals to p1.
 	if (MALE_ONLY_DROP)
 		// Drop a population of only males.

@@ -1,17 +1,13 @@
 initialize() {
     // Fitness parameters:
-    defineConstant("DRIVE_FITNESS_VALUE", 1.0);
-    defineConstant("R2_FITNESS_VALUE", 1.0);
-	 defineCfgParam("DRIVE_EFFICIENCY",1.00);
+    defineConstant("DRIVE_FITNESS_VALUE", 2.00);
     
-    // Drive type:
- 	 defineConstant("MEDEA",T);
     
     // Ecology and drop parameters:
-    defineConstant("CAPACITY", 100000);
-	 defineCfgParam("INTRODUCTION",0.025);
+    defineConstant("CAPACITY", 50000);
+	 defineCfgParam("INTRODUCTION",0.01);
 	 defineCfgParam("LOW_DENSITY_GROWTH_RATE",6.0);
-	 defineConstant("HETEROZYGOUS_DROP",T);
+	 defineConstant("HETEROZYGOUS_DROP",F);
 	
 	 defineConstant("DROP_SIZE",asInteger(INTRODUCTION*CAPACITY/(1-INTRODUCTION)));
 
@@ -82,24 +78,15 @@ function (f$)genotypeFitness(o<Individual>$ ind) {
     // These are the only variants that affect fitness.
     drive_on_1 = ind.genome1.countOfMutationsOfType(m2) > 0;
     drive_on_2 = ind.genome2.countOfMutationsOfType(m2) > 0;
-    res2_on_1 = ind.genome1.countOfMutationsOfType(m4) > 0;
-    res2_on_2 = ind.genome2.countOfMutationsOfType(m4) > 0;
 
     // Check both chromosomes for the drive.
     if (drive_on_1)
-        c1_value = DRIVE_FITNESS_VALUE;
+        c1_value = sqrt(DRIVE_FITNESS_VALUE);
     if (drive_on_2)
-        c2_value = DRIVE_FITNESS_VALUE;
-
-    // Check both chromosomes for resistance allele.
-    if (res2_on_1)
-        c1_value = R2_FITNESS_VALUE;
-    if (res2_on_2)
-        c2_value = R2_FITNESS_VALUE;
-
+        c2_value = sqrt(DRIVE_FITNESS_VALUE);
 
     // Return fitness for individual with this genotype.
-    return sqrt(c1_value * c2_value);
+    return c1_value * c2_value;
 }
 
 
@@ -139,34 +126,11 @@ reproduction(NULL, "F") {
 }
 
 
-//// GENE DRIVE IMPLEMENTATION RULES THAT OCCUR IN EVERY CHILD.
-1: modifyChild() {
-    // If the drive is x-linked, prevent it from being inherited on Y chromosome:
-    if (MEDEA) {
-    	if((child.genome1.countOfMutationsOfType(m2)==0) & (child.genome2.countOfMutationsOfType(m2)==0)){
-    		if((parent1.genome1.countOfMutationsOfType(m1)!=0) & (parent1.genome2.countOfMutationsOfType(m2)!=0)){
-    			if(runif(1)<= DRIVE_EFFICIENCY)
-    				return F;
-    			else
-    				return T;
-    		}
-    		if((parent1.genome1.countOfMutationsOfType(m2)!=0) & (parent1.genome2.countOfMutationsOfType(m1)!=0)){
-    			if(runif(1)<= DRIVE_EFFICIENCY)
-    				return F;
-    			else
-    				return T;
-    		}
-    	}
-    	return T;
-    }
-    return T;
-}
-
 
 
 
 //// START THE SIMULATION BY ADDING AN INITIAL WILD POPULATION.
-1 {
+1 early() {
 	// Start with a population of wild type flies.
 	sim.addSubpop("p1", CAPACITY);
 	all= p1.individuals;
@@ -174,7 +138,7 @@ reproduction(NULL, "F") {
 	}
 
 //// DROP A GROUP OF MODIFIED INDIVIDUALS INTO THE POPULATION.
-10 {
+10 early() {
     // Add a drop of modified individuals to p1.
 
     sim.addSubpop("p2", DROP_SIZE);
@@ -191,7 +155,7 @@ reproduction(NULL, "F") {
 10:late() {
     // Calculate rates that we are intersted in:
    all = sim.subpopulations.individuals;
-	this_gen=sim.generation-10;
+	this_gen=sim.cycle-10;
 	pop_size = size(all);
    num_wt = 0;
    num_dr = 0;
@@ -201,24 +165,26 @@ reproduction(NULL, "F") {
    rate_wt = num_wt/(2*pop_size);
 	num_has_drive = sum(all.countOfMutationsOfType(m2)>=1);
 	rate_has_drive = num_has_drive/pop_size;
-	this_gen = sim.generation - 10;
+	this_gen = sim.cycle - 10;
 	if(this_gen == 0){
-		catn("Special_Generation:"+this_gen);
-		catn("Introduction_Frequency:"+rate_has_drive);
-		catn("Special_Pop_size:"+pop_size);
-		catn("Special_Drive_Allele_Gene_Frequency:"+rate_dr);
-		catn("Special_Drive_Gene_Carrying_Frequency:"+rate_has_drive);
-		catn("Special_Num_Drive_Gene:"+num_dr);
-		catn("Special_Num_Wild_Gene:"+num_wt);
-		catn("Special_Wild_Type_Gene_Frequency:"+rate_wt);
+//		catn("Special_Generation:"+this_gen);
+//		catn("Introduction_Frequency:"+rate_has_drive);
+//		catn("Special_Pop_size:"+pop_size);
+//		catn("Special_Drive_Allele_Gene_Frequency:"+rate_dr);
+		catn(rate_dr);
+//		catn("Special_Drive_Gene_Carrying_Frequency:"+rate_has_drive);
+//		catn("Special_Num_Drive_Gene:"+num_dr);
+//		catn("Special_Num_Wild_Gene:"+num_wt);
+//		catn("Special_Wild_Type_Gene_Frequency:"+rate_wt);
 	}else{
-		catn("Generation:"+this_gen);
-		catn("Pop_size:"+pop_size);
-		catn("Drive_Allele_Gene_Frequency:"+rate_dr);
-		catn("Drive_Gene_Carrying_Frequency:"+rate_has_drive);
-		catn("Num_Drive_Gene:"+num_dr);
-		catn("Num_Wild_Gene:"+num_wt);
-		catn("Wild_Type_Gene_Frequency:"+rate_wt);
+		catn(rate_dr);
+//		catn("Generation:"+this_gen);
+//		catn("Pop_size:"+pop_size);
+//		catn("Drive_Allele_Gene_Frequency:"+rate_dr);
+//		catn("Drive_Gene_Carrying_Frequency:"+rate_has_drive);
+//		catn("Num_Drive_Gene:"+num_dr);
+//		catn("Num_Wild_Gene:"+num_wt);
+//		catn("Wild_Type_Gene_Frequency:"+rate_wt);
 	}
 
 }

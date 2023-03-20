@@ -250,13 +250,13 @@ reproduction(NULL, "F") {
 		if (child.sex == "M") {
 			// Force inheritence of Z from mother.
 			if (mother.genome2.countOfMutationsOfType(m1) > 0)
-				childGenome1.addNewDrawnMutation(m1, 0);
+				child.genome1.addNewDrawnMutation(m1, 0);
 			if (mother.genome2.countOfMutationsOfType(m2) > 0)
-				childGenome1.addNewDrawnMutation(m2, 0);
+				child.genome1.addNewDrawnMutation(m2, 0);
 		}
 		if (child.sex == "F")
 			// Force inheritence of W from mother. The only possible variation for W is wt.
-			childGenome1.addNewDrawnMutation(m1, 0);
+			child.genome1.addNewDrawnMutation(m1, 0);
 	}
 	return T;
 }
@@ -275,8 +275,8 @@ early() {
 
 //// EVALUATE SPATIAL INTERACTIONS BETWEEN INDIVIDUALS FOR OTHER FUNCTIONS.
 late() {
-	i1.evaluate();
-	i2.evaluate();
+	i1.evaluate(sim.subpopulations);
+	i2.evaluate(sim.subpopulations);
 }
 
 //// START THE SIMULATION BY ADDING AN INITIAL WILD POPULATION.
@@ -305,11 +305,52 @@ late() {
 
 //// PROGRAM OUTPUT.
 10:late() {
-	all = sim.subpopulations.individuals;
-	this_gen = sim.generation-10;
-	n=0;
 	catn("MARKER");
-	if(rate_dr_3 >= 0.5 & rate_dr_8 <= 0.5){
+	all = sim.subpopulations.individuals;
+	this_gen = sim.cycle-10;
+	target=all[all.countOfMutationsOfType(m2) != 0];
+	tx=target.x;
+	
+	slice_x3= (tx >0.2) & (tx <= 0.3);
+	slice3=target[slice_x3];
+	num_x3_1 = all[(all.x > 0.2) & (all.x < 0.3)];
+	females_3 = num_x3_1[num_x3_1.sex == "F"];
+	males_3 = num_x3_1[num_x3_1.sex == "M"];
+	num_z_chromo_3 = 2*size(males_3) + size(females_3);
+	num_dr_3 = sum(slice3.genomes.countOfMutationsOfType(m2));
+	rate_dr_3 = num_dr_3/num_z_chromo_3;		
+	timer = sim.getValue("timer");		
+	
+	//only start timer once
+	if (rate_dr_3 >= BAR) {
+		if (timer == "start") {
+			thisgen=sim.cycle-10;
+			catn("STARTING_TIMER_AT:" + thisgen);
+			catn("STARTING_FREQUENCY:"+rate_dr_3);
+			sim.setValue("timer", thisgen);
+		}
+	}
+	
+	slice_x8= (tx >0.7) & (tx <= 0.8);
+	slice8=target[slice_x8];
+	num_x8_1 = all[(all.x > 0.7) & (all.x < 0.8)];
+	females_8 = num_x8_1[num_x8_1.sex == "F"];
+	males_8 = num_x8_1[num_x8_1.sex == "M"];
+	num_z_chromo_8 = 2*size(males_8) + size(females_8);
+	num_dr_8 = sum(slice8.genomes.countOfMutationsOfType(m2));
+	rate_dr_8 = num_dr_8/num_z_chromo_8;
+	
+	if (rate_dr_8 >= BAR) {
+		start_gen = sim.getValue("timer");
+		this_gen = sim.cycle-10;
+		catn("STOPPING_TIMER_AT:" + this_gen);
+		catn("STOPPING_FREQUENCY:"+rate_dr_8);
+	}
+	
+	
+	n=0;
+	
+	if((rate_dr_3 >= 0.5 |rate_dr_3 == 'NAN') & rate_dr_8 <= 0.5){
 		catn("generation:"+this_gen);
 		do{
 			if(any((all.x > (n/50)) & (all.x <= ((n+1)/50))))
@@ -334,8 +375,6 @@ late() {
 				n=n+1;
 				if(n==50)
 					catn("#######");
-				
-			
 			}
 			else{
 				LEFT=n/50;
@@ -346,8 +385,7 @@ late() {
 				if(n==50)
 					catn("#######");
 			}
-		}while(n<50);
-	
+		}while(n<50);	
 	}
 	if(rate_dr_8 > 0.5)
 		sim.simulationFinished();
@@ -355,8 +393,5 @@ late() {
 
 //// PROGRAM END CONDITION.
 510 late() {
-	catn("FITNESS:"+ DD_FITNESS_VALUE);
-	catn("GROWTH:"+ GROWTH_AT_ZERO_DENSITY);
-	catn("TIMED_GENS:500");
 	sim.simulationFinished();
 }

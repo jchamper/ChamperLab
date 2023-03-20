@@ -70,7 +70,7 @@ initialize() {
 	defineConstant("MATING_DISTANCE", SPEED);
 	defineConstant("NUM_CUT_PHASES", 1);
 	
-   	
+	
 	// For mortality rate as a function of age:
 	// Some females are allowed to survive two generations:	
 	defineConstant("RATE_FEMALES_SURVIVE", 0.0);
@@ -125,8 +125,8 @@ initialize() {
 }
 
 function (void) defineCfgParam(string$ name, lifs value) {
-    if (!exists(name))
-        defineConstant(name, value);
+	if (!exists(name))
+		defineConstant(name, value);
 }
 
 //// FUNCTION FOR FORMING A RESISTANCE ALLELE AT A GIVEN LOCUS.
@@ -288,10 +288,10 @@ reproduction() {
 		} // Mate has now been selected. 
 		
 		// Amount of competition faced per expected competition.
-			n_1 = all_neighbors[abs(all_neighbors.x - individual.x) <= DENSITY_INTERACTION_DISTANCE];
-			adult_density_force = length(n_1) - sum(i1.interactionDistance(individual,n_1))*(1/DENSITY_INTERACTION_DISTANCE);	
-			competition_ratio = adult_density_force / EXPECTED_ADULT_COMPETITION;
-			actual_competition_factor = GROWTH_AT_ZERO_DENSITY/ ((GROWTH_AT_ZERO_DENSITY-1) * competition_ratio + 1);
+		n_1 = all_neighbors[abs(all_neighbors.x - individual.x) <= DENSITY_INTERACTION_DISTANCE];
+		adult_density_force = length(n_1) - sum(i1.interactionDistance(individual,n_1))*(1/DENSITY_INTERACTION_DISTANCE);
+		competition_ratio = adult_density_force / EXPECTED_ADULT_COMPETITION;
+		actual_competition_factor = GROWTH_AT_ZERO_DENSITY/ ((GROWTH_AT_ZERO_DENSITY-1) * competition_ratio + 1);
 		
 		// Offspring number based on binomial distrobution.
 		// p for binomial draw. Number of offspring varies with female genes and competition.
@@ -347,9 +347,9 @@ reproduction() {
 		maternalGenome = childGenome2;
 	} else {
 		father = parent2;
-		paternalGenome = childGenome2;
+		paternalGenome = child.genome2;
 		mother = parent1;
-		maternalGenome = childGenome1;
+		maternalGenome = child.genome1;
 	}
 	
 	// If the father had the drive, simulate germline cleavage.
@@ -429,8 +429,8 @@ early() {
 
 //// EVALUATE SPATIAL INTERACTIONS BETWEEN INDIVIDUALS FOR OTHER FUNCTIONS.
 late() {
-	i1.evaluate();
-	i2.evaluate();
+	i1.evaluate(sim.subpopulations);
+	i2.evaluate(sim.subpopulations);
 }
 
 
@@ -566,7 +566,7 @@ late() {
 		// Only left-edge drops are possible for 1D
 		drop.x = runif(DROP_SIZE, 0, DROP_RADIUS);
 		p1.takeMigrants(drop);
-      p2.removeSubpopulation();
+		p2.removeSubpopulation();
 	}
 	
 	// Won't start tracking Green's coefficient until the number of
@@ -587,7 +587,7 @@ late() {
 	pop_size = size(all);
 	num_females = size(females);
 	num_males = size(males);
-	this_gen = sim.generation-10;
+	this_gen = sim.cycle-10;
 	
 	// Chromosome counts
 	num_y = num_males;
@@ -654,57 +654,91 @@ late() {
 		// 1-D specific detection:
 	} else {
 		all = sim.subpopulations.individuals;
-		this_gen = sim.generation-10;
+		this_gen = sim.cycle-10;
+		catn("MARKER");
 		n=0;
-		if(this_gen != 13)
-			catn("waiting_generation:"+this_gen);
-		if(this_gen == 13){
+		if (length(all)>0){
+			target=all[all.countOfMutationsOfType(m2) != 0];
+			tx=target.x;
+			slice_x3= (tx >0.2) & (tx <= 0.3);
+			slice3=target[slice_x3];
+			num_x3=(males.x > 0.2) & (males.x < 0.3);
+			num_x3_1 = males[num_x3];
+			num_x_3 = length(num_x3_1);
+			num_dr_3 = sum(slice3.genomes.countOfMutationsOfType(m2)==NUM_GRNAS);
+			rate_dr_3 = num_dr_3/num_x_3;
+			timer = sim.getValue("timer");
+			
+			//only start timer once
+			if (rate_dr_3 >= 0.5) {
+				if (timer == "start") {
+					thisgen=sim.cycle-10;
+					catn("STARTING_TIMER_AT:" + thisgen);
+					catn("STARTING_FREQUENCY:"+rate_dr_3);
+					sim.setValue("timer", thisgen);
+				}
+			}
+			
+			slice_x8= (tx >0.7) & (tx <= 0.8);
+			slice8=target[slice_x8];
+			num_x8=(males.x > 0.7) & (males.x < 0.8);
+			num_x8_1 = males[num_x8];
+			num_x_8 = length(num_x8_1);
+			num_dr_8 = sum(slice8.genomes.countOfMutationsOfType(m2)==NUM_GRNAS);
+			rate_dr_8 = num_dr_8/num_x_8;
+			
+			if (rate_dr_8 >= 0.5) {
+				start_gen = sim.getValue("timer");
+				this_gen = sim.cycle-10;
+				gens_elapsed = this_gen - start_gen;
+				catn("STOPPING_TIMER_AT:" + this_gen);
+				catn("STOPPING_FREQUENCY:"+rate_dr_8);
+			}
+		}
+		if((rate_dr_3 >= 0.5 |rate_dr_3 == 'NAN') & rate_dr_8 <= 0.5){
 			catn("generation:"+this_gen);
 			do{
 				if(any((all.x > (n/50)) & (all.x <= ((n+1)/50))))
-					{
-						all_slice_helper =(all.x > (n/50)) & (all.x < ((n+1)/50));
-						all_slice = all[all_slice_helper];
-						Females = all_slice[all_slice.tagF == 1.0];
-						Males = all_slice[all_slice.tagF == 0.0];
-						Drive_Males = Males[Males.genome2.countOfMutationsOfType(m2) == NUM_GRNAS];
-						Wild_Males = Males[Males.genome2.countOfMutationsOfType(m1) == 1];
-						dr_males = sum(Drive_Males.genome2.countOfMutationsOfType(m2)== NUM_GRNAS);
-						wt_males = sum(Wild_Males.genome2.countOfMutationsOfType(m1)== 1);
-						LEFT=n/50;
-						RIGHT=(n+1)/50;
-						CORE = (LEFT + RIGHT)/2;
-						catn("CORE:"+CORE);
-						catn("Drive_Males:"+length(Drive_Males));
-						catn(dr_males);
-						catn("Wild_Males:"+length(Wild_Males));
-						catn(wt_males);
-						catn("Females:"+length(Females));
-						n=n+1;
-
-					}
-					else{
-						LEFT=n/50;
-						RIGHT=(n+1)/50;
-						CORE = (LEFT + RIGHT)/2;
-						catn("CORE:"+CORE);
-						catn("Drive_Males:0");
-						catn("Wild_Males:0");
-						catn("Females:0");
-						n=n+1;
-					}
-      		}while(n<50);
-
+				{
+					all_slice_helper =(all.x > (n/50)) & (all.x < ((n+1)/50));
+					all_slice = all[all_slice_helper];
+					Females = all_slice[all_slice.tagF == 1.0];
+					Males = all_slice[all_slice.tagF == 0.0];
+					Drive_Males = Males[Males.genome2.countOfMutationsOfType(m2) == NUM_GRNAS];
+					Wild_Males = Males[Males.genome2.countOfMutationsOfType(m1) == 1];
+					dr_males = sum(Drive_Males.genome2.countOfMutationsOfType(m2)== NUM_GRNAS);
+					wt_males = sum(Wild_Males.genome2.countOfMutationsOfType(m1)== 1);
+					drive_carrier_freq = length(Drive_Males)/length(Males);
+					LEFT=n/50;
+					RIGHT=(n+1)/50;
+					CORE = (LEFT + RIGHT)/2;
+					catn("POSITION:"+CORE+":DRIVE_CARRIER_FREQUENCY:"+drive_carrier_freq);
+					n=n+1;
+					if(n==50)
+						catn("#######");
+				
+				}
+				else{
+					LEFT=n/50;
+					RIGHT=(n+1)/50;
+					CORE = (LEFT + RIGHT)/2;
+					catn("POSITION:"+CORE+":DRIVE_CARRIER_FREQUENCY:NULL");
+					n=n+1;
+					if(n==50)
+						catn("#######");
+				}
+			}while(n<50);
+		
 		}
-		if(n == 50)
-			sim.simulationFinished();	
+		if(rate_dr_8 > 0.5)
+			sim.simulationFinished();
 	}
 }
 
 
 //// If there was a drop, stop simulation after 1000 generations if not stopped already
 510 late() {
-			sim.simulationFinished();
+	sim.simulationFinished();
 }
 
 
