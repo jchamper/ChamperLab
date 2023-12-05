@@ -1,0 +1,653 @@
+LOCUS       RIDL_homing_plas        7609 bp    DNA        circular     26-NOV-2023
+DEFINITION  synthetic DNA.
+ACCESSION   .
+VERSION     .
+KEYWORDS    XX23-HSDrgU2U4v2
+SOURCE      synthetic DNA construct
+  ORGANISM  synthetic DNA construct
+REFERENCE   1  (bases 1 to 7609)
+  AUTHORS   .
+  TITLE     NEBuilder-generated Construct
+  JOURNAL   Exported  10-DEC-2021 from NEBuilder https://nebuilder.neb.com
+REFERENCE   2  (bases 1 to 7609)
+  AUTHORS   .
+  TITLE     Direct Submission
+  JOURNAL   Exported Friday, Oct 28, 2022 from SnapGene 5.2.0
+            https://www.snapgene.com
+COMMENT     SGRef: number: 1; type: "Journal Article"; journalName: "Exported
+            10-DEC-2021 from NEBuilder https://nebuilder.neb.com"
+COMMENT     NEBuilder-generated oligos (UPPERCASE = gene-specific, lowercase =
+            overlap) Left homology arm_fwd:
+            agtgttacaaccaattaaccaggtaccgatGGTCGGGTACAGGCTTTC Left homology
+            arm_fwd 3'Tm: 65.6  3'Ta: 62.4 Left homology arm_rev:
+            agtcggtgcttttttAGTAGGGAAAGTCAAACCG Left homology arm_rev 3'Tm: 61.4
+            3'Ta: 62.4 yg-gRNAs_fwd: ttgactttccctactAAAAAAGCACCGACTCGG
+            yg-gRNAs_fwd 3'Tm: 63.0  3'Ta: 62.0 yg-gRNAs_rev:
+            ttacatctggataagtaatgaaaacctggaTTTTTTGCTCACCTGTGATTG yg-gRNAs_rev
+            3'Tm: 61.0  3'Ta: 62.0
+COMMENT     
+COMMENT     ApEinfo:methylated:1
+FEATURES             Location/Qualifiers
+     promoter        6647..6677
+                     /locus_tag="U6:3 Promoter(1)"
+                     /label="U6:3 Promoter(1)"
+                     /ApEinfo_label="U6:3 Promoter(1)"
+                     /ApEinfo_fwdcolor="#346ee0"
+                     /ApEinfo_revcolor="#346ee0"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     6651..6671
+                     /locus_tag="Yellow_gRNA1_S_F(1)"
+                     /label="Yellow_gRNA1_S_F(1)"
+                     /ApEinfo_label="Yellow_gRNA1_S_F(1)"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     complement(6727..6746)
+                     /locus_tag="pBB_S_R"
+                     /label="pBB_S_R"
+                     /ApEinfo_label="pBB_S_R"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     rep_origin      6847..7512
+                     /locus_tag="Origin"
+                     /label="Origin"
+                     /ApEinfo_label="Origin"
+                     /ApEinfo_fwdcolor="#999999"
+                     /ApEinfo_revcolor="#999999"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     CDS             complement(5..865)
+                     /locus_tag="AmpR"
+                     /label="AmpR"
+                     /ApEinfo_label="AmpR"
+                     /ApEinfo_fwdcolor="#e9d024"
+                     /ApEinfo_revcolor="#e9d024"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     902..922
+                     /locus_tag="Primer IHD_S_F"
+                     /label="Primer IHD_S_F"
+                     /ApEinfo_label="Primer IHD_S_F"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     promoter        complement(907..935)
+                     /locus_tag="Amp Promoter"
+                     /label="Amp Promoter"
+                     /ApEinfo_label="Amp Promoter"
+                     /ApEinfo_fwdcolor="#346ee0"
+                     /ApEinfo_revcolor="#346ee0"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     misc_feature    996..2227
+                     /note="from AHDr352v2"
+                     /locus_tag="left homology arm"
+                     /label="left homology arm"
+                     /ApEinfo_label="left homology arm"
+                     /ApEinfo_fwdcolor="#7eff74"
+                     /ApEinfo_revcolor="#7eff74"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     1134..1155
+                     /locus_tag="Primer RpL35ALeft_S_F"
+                     /label="Primer RpL35ALeft_S_F"
+                     /ApEinfo_label="Primer RpL35ALeft_S_F"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     5'UTR           1221..1227
+                     /locus_tag="RpL35A Exon 3 5' UTR"
+                     /label="RpL35A Exon 3 5' UTR"
+                     /ApEinfo_label="RpL35A Exon 3 5' UTR"
+                     /ApEinfo_fwdcolor="#ffd327"
+                     /ApEinfo_revcolor="#ffd327"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     CDS             1228..1449
+                     /locus_tag="RpL35A Exon 3 CDS"
+                     /label="RpL35A Exon 3 CDS"
+                     /ApEinfo_label="RpL35A Exon 3 CDS"
+                     /ApEinfo_fwdcolor="#e9d024"
+                     /ApEinfo_revcolor="#e9d024"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     complement(1234..1254)
+                     /locus_tag="Primer Rpl35ALeft_S_R"
+                     /label="Primer Rpl35ALeft_S_R"
+                     /ApEinfo_label="Primer Rpl35ALeft_S_R"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     CDS             1575..1612
+                     /locus_tag="RpL35A Exon 4 CDS 2588..2801"
+                     /label="RpL35A Exon 4 CDS 2588..2801"
+                     /ApEinfo_label="RpL35A Exon 4 CDS 2588..2801"
+                     /ApEinfo_fwdcolor="#e9d024"
+                     /ApEinfo_revcolor="#e9d024"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     3'UTR           1827..1904
+                     /locus_tag="RpL35A 3'UTR"
+                     /label="RpL35A 3'UTR"
+                     /ApEinfo_label="RpL35A 3'UTR"
+                     /ApEinfo_fwdcolor="#f76ca1"
+                     /ApEinfo_revcolor="#008040"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     complement(1835..1857)
+                     /locus_tag="Primer Rpl35ARight_S_R"
+                     /label="Primer Rpl35ARight_S_R"
+                     /ApEinfo_label="Primer Rpl35ARight_S_R"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     misc_feature    1905..2004
+                     /locus_tag="Homology Region"
+                     /label="Homology Region"
+                     /ApEinfo_label="Homology Region"
+                     /ApEinfo_fwdcolor="#7eff74"
+                     /ApEinfo_revcolor="#7eff74"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     promoter        2009..2214
+                     /locus_tag="3xP3 Promoter"
+                     /label="3xP3 Promoter"
+                     /ApEinfo_label="3xP3 Promoter"
+                     /ApEinfo_fwdcolor="#346ee0"
+                     /ApEinfo_revcolor="#346ee0"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     2068..2088
+                     /locus_tag="Primer EGFPa_S_F"
+                     /label="Primer EGFPa_S_F"
+                     /ApEinfo_label="Primer EGFPa_S_F"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     complement(2165..2189)
+                     /locus_tag="EGFPa_S_R"
+                     /label="EGFPa_S_R"
+                     /ApEinfo_label="EGFPa_S_R"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     misc_signal     2217..2223
+                     /locus_tag="BRE upstream"
+                     /label="BRE upstream"
+                     /ApEinfo_label="BRE upstream"
+                     /ApEinfo_fwdcolor="#008040"
+                     /ApEinfo_revcolor="#008040"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     misc_feature    2228..2235
+                     /locus_tag="Dm Kozak signal"
+                     /label="Dm Kozak signal"
+                     /ApEinfo_label="Dm Kozak signal"
+                     /ApEinfo_fwdcolor="#7eff74"
+                     /ApEinfo_revcolor="#7eff74"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     CDS             2232..2951
+                     /locus_tag="EGFP"
+                     /label="EGFP"
+                     /ApEinfo_label="EGFP"
+                     /ApEinfo_fwdcolor="#e9d024"
+                     /ApEinfo_revcolor="#e9d024"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     2518..2538
+                     /locus_tag="EGFP_S_F"
+                     /label="EGFP_S_F"
+                     /ApEinfo_label="EGFP_S_F"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     complement(2647..2667)
+                     /locus_tag="EGFP_S_R"
+                     /label="EGFP_S_R"
+                     /ApEinfo_label="EGFP_S_R"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     3'UTR           2952..3617
+                     /locus_tag="P10 3' UTR terminator"
+                     /label="P10 3' UTR terminator"
+                     /ApEinfo_label="P10 3' UTR terminator"
+                     /ApEinfo_fwdcolor="#f76ca1"
+                     /ApEinfo_revcolor="#008040"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     3430..3450
+                     /locus_tag="Primer P10_S_F"
+                     /label="Primer P10_S_F"
+                     /ApEinfo_label="Primer P10_S_F"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     3594..3617
+                     /locus_tag="RIDL-03-tTAV-F"
+                     /label="RIDL-03-tTAV-F"
+                     /ApEinfo_label="RIDL-03-tTAV-F"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     complement(3604..3623)
+                     /locus_tag="RIDL-01-bb-R"
+                     /label="RIDL-01-bb-R"
+                     /ApEinfo_label="RIDL-01-bb-R"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     misc_feature    3627..4888
+                     /locus_tag="tTAV"
+                     /label="tTAV"
+                     /ApEinfo_label="tTAV"
+                     /ApEinfo_fwdcolor="#7eff74"
+                     /ApEinfo_revcolor="#7eff74"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     misc_feature    complement(4638..4885)
+                     /locus_tag="tra intron"
+                     /label="tra intron"
+                     /ApEinfo_label="tra intron"
+                     /ApEinfo_fwdcolor="#7eff74"
+                     /ApEinfo_revcolor="#7eff74"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     misc_feature    complement(4899..5028)
+                     /locus_tag="Drosophila Hsp70minimal promoter"
+                     /label="Drosophila Hsp70minimal promoter"
+                     /ApEinfo_label="Drosophila Hsp70minimal promoter"
+                     /ApEinfo_fwdcolor="#7eff74"
+                     /ApEinfo_revcolor="#7eff74"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     misc_feature    complement(5034..5717)
+                     /locus_tag="tetO"
+                     /label="tetO"
+                     /ApEinfo_label="tetO"
+                     /ApEinfo_fwdcolor="#7eff74"
+                     /ApEinfo_revcolor="#7eff74"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     protein_bind    5047..5317
+                     /bound_moiety="tetracycline repressor TetR"
+                     /note="contains seven copies of the tetracycline operator
+                     tetO"
+                     /locus_tag="tetracycline response element"
+                     /label="tetracycline response element"
+                     /ApEinfo_label="tetracycline response element"
+                     /ApEinfo_fwdcolor="#00D95A"
+                     /ApEinfo_revcolor="#00D95A"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     protein_bind    5426..5444
+                     /gene="tetO"
+                     /bound_moiety="tetracycline repressor TetR"
+                     /note="bacterial operator O2 for the tetR and tetA genes"
+                     /locus_tag="tet operator"
+                     /label="tet operator"
+                     /ApEinfo_label="tet operator"
+                     /ApEinfo_fwdcolor="#008065"
+                     /ApEinfo_revcolor="#008065"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     protein_bind    5447..5465
+                     /gene="tetO"
+                     /bound_moiety="tetracycline repressor TetR"
+                     /note="bacterial operator O2 for the tetR and tetA genes"
+                     /locus_tag="tet operator(1)"
+                     /label="tet operator(1)"
+                     /ApEinfo_label="tet operator"
+                     /ApEinfo_fwdcolor="#13AAFE"
+                     /ApEinfo_revcolor="#13AAFE"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     protein_bind    5468..5486
+                     /gene="tetO"
+                     /bound_moiety="tetracycline repressor TetR"
+                     /note="bacterial operator O2 for the tetR and tetA genes"
+                     /locus_tag="tet operator(2)"
+                     /label="tet operator(2)"
+                     /ApEinfo_label="tet operator"
+                     /ApEinfo_fwdcolor="#3A93FE"
+                     /ApEinfo_revcolor="#3A93FE"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     protein_bind    5489..5507
+                     /gene="tetO"
+                     /bound_moiety="tetracycline repressor TetR"
+                     /note="bacterial operator O2 for the tetR and tetA genes"
+                     /locus_tag="tet operator(3)"
+                     /label="tet operator(3)"
+                     /ApEinfo_label="tet operator"
+                     /ApEinfo_fwdcolor="#2D64FE"
+                     /ApEinfo_revcolor="#2D64FE"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     protein_bind    5510..5528
+                     /gene="tetO"
+                     /bound_moiety="tetracycline repressor TetR"
+                     /note="bacterial operator O2 for the tetR and tetA genes"
+                     /locus_tag="tet operator(4)"
+                     /label="tet operator(4)"
+                     /ApEinfo_label="tet operator"
+                     /ApEinfo_fwdcolor="#00891F"
+                     /ApEinfo_revcolor="#00891F"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     protein_bind    5531..5549
+                     /gene="tetO"
+                     /bound_moiety="tetracycline repressor TetR"
+                     /note="bacterial operator O2 for the tetR and tetA genes"
+                     /locus_tag="tet operator(5)"
+                     /label="tet operator(5)"
+                     /ApEinfo_label="tet operator"
+                     /ApEinfo_fwdcolor="#00C6C3"
+                     /ApEinfo_revcolor="#00C6C3"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     protein_bind    5552..5570
+                     /gene="tetO"
+                     /bound_moiety="tetracycline repressor TetR"
+                     /note="bacterial operator O2 for the tetR and tetA genes"
+                     /locus_tag="tet operator(6)"
+                     /label="tet operator(6)"
+                     /ApEinfo_label="tet operator"
+                     /ApEinfo_fwdcolor="#00D0FA"
+                     /ApEinfo_revcolor="#00D0FA"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     protein_bind    5573..5591
+                     /gene="tetO"
+                     /bound_moiety="tetracycline repressor TetR"
+                     /note="bacterial operator O2 for the tetR and tetA genes"
+                     /locus_tag="tet operator(7)"
+                     /label="tet operator(7)"
+                     /ApEinfo_label="tet operator"
+                     /ApEinfo_fwdcolor="#00D308"
+                     /ApEinfo_revcolor="#00D308"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     protein_bind    5594..5612
+                     /gene="tetO"
+                     /bound_moiety="tetracycline repressor TetR"
+                     /note="bacterial operator O2 for the tetR and tetA genes"
+                     /locus_tag="tet operator(8)"
+                     /label="tet operator(8)"
+                     /ApEinfo_label="tet operator"
+                     /ApEinfo_fwdcolor="#2D64FE"
+                     /ApEinfo_revcolor="#2D64FE"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     protein_bind    5615..5633
+                     /gene="tetO"
+                     /bound_moiety="tetracycline repressor TetR"
+                     /note="bacterial operator O2 for the tetR and tetA genes"
+                     /locus_tag="tet operator(9)"
+                     /label="tet operator(9)"
+                     /ApEinfo_label="tet operator"
+                     /ApEinfo_fwdcolor="#EE92FE"
+                     /ApEinfo_revcolor="#EE92FE"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     protein_bind    5636..5654
+                     /gene="tetO"
+                     /bound_moiety="tetracycline repressor TetR"
+                     /note="bacterial operator O2 for the tetR and tetA genes"
+                     /locus_tag="tet operator(10)"
+                     /label="tet operator(10)"
+                     /ApEinfo_label="tet operator"
+                     /ApEinfo_fwdcolor="#A600FA"
+                     /ApEinfo_revcolor="#A600FA"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     protein_bind    5657..5675
+                     /gene="tetO"
+                     /bound_moiety="tetracycline repressor TetR"
+                     /note="bacterial operator O2 for the tetR and tetA genes"
+                     /locus_tag="tet operator(11)"
+                     /label="tet operator(11)"
+                     /ApEinfo_label="tet operator"
+                     /ApEinfo_fwdcolor="#4856FE"
+                     /ApEinfo_revcolor="#4856FE"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     protein_bind    5678..5696
+                     /gene="tetO"
+                     /bound_moiety="tetracycline repressor TetR"
+                     /note="bacterial operator O2 for the tetR and tetA genes"
+                     /locus_tag="tet operator(12)"
+                     /label="tet operator(12)"
+                     /ApEinfo_label="tet operator"
+                     /ApEinfo_fwdcolor="#FE09C9"
+                     /ApEinfo_revcolor="#FE09C9"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     protein_bind    5699..5717
+                     /gene="tetO"
+                     /bound_moiety="tetracycline repressor TetR"
+                     /note="bacterial operator O2 for the tetR and tetA genes"
+                     /locus_tag="tet operator(13)"
+                     /label="tet operator(13)"
+                     /ApEinfo_label="tet operator"
+                     /ApEinfo_fwdcolor="#FE139F"
+                     /ApEinfo_revcolor="#FE139F"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     misc_feature    5718..6677
+                     /locus_tag="right homology arm"
+                     /label="right homology arm"
+                     /ApEinfo_label="right homology arm"
+                     /ApEinfo_fwdcolor="#7eff74"
+                     /ApEinfo_revcolor="#7eff74"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     CDS             5718..6392
+                     /locus_tag="dsRed"
+                     /label="dsRed"
+                     /ApEinfo_label="dsRed"
+                     /ApEinfo_fwdcolor="#e9d024"
+                     /ApEinfo_revcolor="#e9d024"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     5718..5735
+                     /locus_tag="RIDL-02-bb-F"
+                     /label="RIDL-02-bb-F"
+                     /ApEinfo_label="RIDL-02-bb-F"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     complement(5726..5747)
+                     /locus_tag="RIDL-04-tetO-R"
+                     /label="RIDL-04-tetO-R"
+                     /ApEinfo_label="RIDL-04-tetO-R"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     complement(5792..5811)
+                     /locus_tag="161_dsRed_R1"
+                     /label="161_dsRed_R1"
+                     /ApEinfo_label="161_dsRed_R1"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     6183..6203
+                     /locus_tag="Primer dsRed_S_F"
+                     /label="Primer dsRed_S_F"
+                     /ApEinfo_label="Primer dsRed_S_F"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     complement(6306..6326)
+                     /locus_tag="Primer dsRed_S_R"
+                     /label="Primer dsRed_S_R"
+                     /ApEinfo_label="Primer dsRed_S_R"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     terminator      6393..6634
+                     /locus_tag="SV40 polyA"
+                     /label="SV40 polyA"
+                     /ApEinfo_label="SV40 polyA"
+                     /ApEinfo_fwdcolor="#9d1b1c"
+                     /ApEinfo_revcolor="#9d1b1c"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+     primer_bind     6414..6438
+                     /locus_tag="149_SV40_S_F"
+                     /label="149_SV40_S_F"
+                     /ApEinfo_label="149_SV40_S_F"
+                     /ApEinfo_fwdcolor="#14c0bd"
+                     /ApEinfo_revcolor="#4ec02b"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {0 .5 .1 .5 .1 -.5 0 -.5} 0} width 5 offset 0"
+ORIGIN
+        1 gcttttacca atgcttaatc agtgaggcac ctatctcagc gatctgtcta tttcgttcat
+       61 ccatagttgc ctgactcccc gtcgtgtaga taactacgat acgggagggc ttaccatctg
+      121 gccccagcgc tgcgatgata ccgcgagaac cacgctcacc ggctccggat ttatcagcaa
+      181 taaaccagcc agccggaagg gccgagcgca gaagtggtcc tgcaacttta tccgcctcca
+      241 tccagtctat taattgttgc cgggaagcta gagtaagtag ttcgccagtt aatagtttgc
+      301 gcaacgttgt tgccatcgct acaggcatcg tggtgtcacg ctcgtcgttt ggtatggctt
+      361 cattcagctc cggttcccaa cgatcaaggc gagttacatg atcccccatg ttgtgcaaaa
+      421 aagcggttag ctccttcggt cctccgatcg ttgtcagaag taagttggcc gcagtgttat
+      481 cactcatggt tatggcagca ctgcataatt ctcttactgt catgccatcc gtaagatgct
+      541 tttctgtgac tggtgagtac tcaaccaagt cattctgaga atagtgtatg cggcgaccga
+      601 gttgctcttg cccggcgtca atacgggata ataccgcgcc acatagcaga actttaaaag
+      661 tgctcatcat tggaaaacgt tcttcggggc gaaaactctc aaggatctta ccgctgttga
+      721 gatccagttc gatgtaaccc actcgtgcac ccaactgatc ttcagcatct tttactttca
+      781 ccagcgtttc tgggtgagca aaaacaggaa ggcaaaatgc cgcaaaaaag ggaataaggg
+      841 cgacacggaa atgttgaata ctcatattct tcctttttca atattattga agcatttatc
+      901 agggttattg tctcatgagc ggatacatat ttgaatgtat ttagaaaaat aaacaaatag
+      961 gggtcagtgt tacaaccaat taaccaggta ccgatggtcg ggtacaggct ttcctcgaat
+     1021 tttcaccaga ctccgcttta tttttatata aaatgatgtt tttaatgtac tgttgcccag
+     1081 agctgtgcac ctcaatatct tcaatgttta aagtactttt cgtttgatca aatgcatgca
+     1141 aatgatcgaa accctcaagc cccaacgaat acctatgatg aatgcctacg gctctaaaga
+     1201 ttatcttttc tcatccacag ctaagccatg gccgacacac aagccaagtc cactactgcg
+     1261 cccaaggccg ccaaggccca gaaggctccc aaggccgtca aggcgcctaa ggccgagaag
+     1321 cccgccgcct cagaggctaa agtttccgcc aagaagtaca agcgtcacgg acgcctcttc
+     1381 gccaaggccg tcttcaccgg ctacaagcgt ggtctgagga accagcacga gaaccaggcc
+     1441 atcctcaagg tatgtctata cttcaatgtg atgggtccgg acttcacaga gtttttcaaa
+     1501 taataattaa tacattccag ttctgtaaaa acattttagt aatgtaattg attaaccaac
+     1561 atattacatt gcagattgag ggcgcccgcc gcaaggagca cggatccttc tatgtgggca
+     1621 agcgctgtgt gtacgtgtat aaggccgaga cgaagaagtg cgtcccccag cacccggagc
+     1681 gcaagacgcg cgtgcgcgcc gtgtggggaa aggtgacgcg cattcatgga aatacgggag
+     1741 ccgtccgcgc ccgctttaat cgcaatctgc cgggccacgc catgggacat cgcattcgca
+     1801 ttatgctgta tcccagccgc atctaagtta atatccgact tgaattactg acctgcagga
+     1861 gtaaaaaatc cgttttacat taaatgaaac actttaaatt taattaaaac gcaacttggc
+     1921 ttttttatta aggcgagata ccgattgaaa gttgacggta atctgtatat cgattgatgg
+     1981 ctgttcggtt tgactttccc tactcccggg atctaattca attagagact aattcaatta
+     2041 gagctaattc aattaggatc caagcttatc gatttcgaac cctcgaccgc cggagtataa
+     2101 atagaggcgc ttcgtctacg gagcgacaat tcaattcaaa caagcaaagt gaacacgtcg
+     2161 ctaagcgaaa gctaagcaaa taaacaagcg cagctgaaca agctaaacaa tcggctcgaa
+     2221 gccggtccaa aatggtgagc aagggcgagg agctgttcac cggggtggtg cccatcctgg
+     2281 tcgagctgga cggcgacgta aacggccaca agttcagcgt gtccggcgag ggcgagggcg
+     2341 atgccaccta cggcaagctg accctgaagt tcatctgcac caccggcaag ctgcccgtgc
+     2401 cctggcccac cctcgtgacc accctgacct acggcgtgca gtgcttcagc cgctaccccg
+     2461 accacatgaa gcagcacgac ttcttcaagt ccgccatgcc cgaaggctac gtccaggagc
+     2521 gcaccatctt cttcaaggac gacggcaact acaagacccg cgccgaggtg aagttcgagg
+     2581 gcgacaccct ggtgaaccgc atcgagctga agggcatcga cttcaaggag gacggcaaca
+     2641 tcctggggca caagctggag tacaactaca acagccacaa cgtctatatc atggccgaca
+     2701 agcagaagaa cggcatcaag gtgaacttca agatccgcca caacatcgag gacggcagcg
+     2761 tgcagctcgc cgaccactac cagcagaaca cccccatcgg cgacggcccc gtgctgctgc
+     2821 ccgacaacca ctacctgagc acccagtccg ccctgagcaa agaccccaac gagaagcgcg
+     2881 atcacatggt cctgctggag ttcgtgaccg ccgccgggat cactctcggc atggacgagc
+     2941 tgtacaagta aatgaatcgt ttttaaaata acaaatcaat tgttttataa tattcgtacg
+     3001 attctttgat tatgtaataa aatgtgatca ttaggaagat tacgaaaaat ataaaaaata
+     3061 tgagttctgt gtgtataaca aatgctgtaa acgccacaat tgtgtttgtt gcaaataaac
+     3121 ccatgattat ttgattaaaa ttgttgtttt ctttgttcat agacaatagt gtgttttgcc
+     3181 taaacgtgta ctgcataaac tccatgcgag tgtatagcga gctagtggct aacgcttgcc
+     3241 ccaccaaagt agattcgtca aaatcctcaa tttcatcacc ctcctccaag tttaacattt
+     3301 ggccgtcgga attaacttct aaagatgcca cataatctaa taaatgaaat agagattcaa
+     3361 acgtggcgtc atcgtccgtt tcgaccattt ccgaaaagaa ctcgggcata aactctatga
+     3421 tttctctgga cgtggtgttg tcgaaactct caaagtacgc agtcaggaac gtgcgcgaca
+     3481 tgtcgtcggg aaactcgcgc ggaaacatgt tgttgtaacc gaacgggtcc catagcgcca
+     3541 aaaccaaatc tgccagcgtc aatagaatga gcacgatgcc gacaatggag ctggcttgga
+     3601 tagcgattcg agttaacccc gggctaccca ccgtactcgt caattccaag ggcatcggta
+     3661 aacatctgct caaactcgaa gtcggccata tccagagcgc cgtagggggc ggagtcgtgg
+     3721 ggggtaaatc ccggacccgg ggaatccccg tcccccaaca tgtccagatc gaaatcgtct
+     3781 agcgcgtcgg catgcgccat cgccacgtcc tcgccgtcta agtggagctc gtcccccagg
+     3841 ctgacatcgg tcgggggggc cgtcgacagt ctgcgcgtgt gtcccgcggg gagaaaggac
+     3901 aggcgcggag ccgccagccc cgcctcttcg ggggcgtcgt cgtccgggag atcgagcagg
+     3961 ccctcgatgg tagacccgta attgtttttc gtacgcgcgc ggctgtacgc ggggcccgag
+     4021 cccgactcgc atttcagttg cttttccaat ccgcagataa tcagctccaa gccgaacagg
+     4081 aatgccggct cggctccttg atgatcgaac agctcgattg cctgacgcag cagtgggggc
+     4141 atcgaatcgg ttgttggggt ctcgcgctcc tcttttgcga cttgatgctc ttggtcctcc
+     4201 agcacgcagc ccagggtaaa gtgaccgacg gcgctcagag cgtagagagc attttccagg
+     4261 ctgaagcctt gctggcacag gaacgcgagc tggttctcca gtgtctcgta ttgcttttcg
+     4321 gtcgggcgcg tgccgagatg gactttggca ccgtctcggt gggacagcag agcgcagcgg
+     4381 aacgacttgg cgttattgcg gaggaagtcc tgccaggact cgccttccaa cgggcaaaaa
+     4441 tgcgtgtggt ggcggtcgag catctcgatg gccagggcat ccagcagcgc ccgcttattc
+     4501 ttcacgtgcc agtagagggt gggctgctcc acgcccagct tctgcgccaa cttgcgggtc
+     4561 gtcagtccct caatgccaac ttcgttcaac agctccaacg cggagttgat gactttggac
+     4621 ttatccaggc ggctgaccta tgtgaaaaga gtgtgcggtt agtcaatgca tctaacgcat
+     4681 agtgtttggc gcatcgtcgg agacggaatc cacgtaatgc gcagttgaga gtcctattgt
+     4741 cctagcttct ctttctctgt ctggtcgtcc agcgttcatt ctcatccatt tcacatttca
+     4801 cacaatatga cactagaaaa aaaacaacaa aaagatggca ctggatcaga atctgatcag
+     4861 atcggttata ctatatagtg ggtaccatgg tggctagcgc agattgttta gcttgttcag
+     4921 ctgcgcttgt ttatttgctt agctttcgct tagcgacgtg ttcactttgc ttgtttgaat
+     4981 tgaattgtcg ctccgtagac gaagcgcctc tatttatact ccggcgctcg ttttcgagtt
+     5041 taccactccc tatcagtgat agagaaaagt gaaagtcgag tttaccactc cctatcagtg
+     5101 atagagaaaa gtgaaagtcg agtttaccac tccctatcag tgatagagaa aagtgaaagt
+     5161 cgagtttacc actccctatc agtgatagag aaaagtgaaa gtcgagttta ccactcccta
+     5221 tcagtgatag agaaaagtga aagtcgagtt taccactccc tatcagtgat agagaaaagt
+     5281 gaaagtcgag tttaccactc cctatcagtg atagagaaaa gtgaaagtcg aaacctggcg
+     5341 cgccccggcc atcgagaaag agagagagaa gagaagagag agaacattcg agaaagagag
+     5401 agagaagaga agagagagaa catactccct atcagtgata gagaagtccc tatcagtgat
+     5461 agagatgtcc ctatcagtga tagagagttc cctatcagtg atagagacgt ccctatcagt
+     5521 gatagagaag tccctatcag tgatagagag atccctatca gtgatagaga tttccctatc
+     5581 agtgatagag aggtccctat cagtgataga gacttcccta tcagtgatag agaaatccct
+     5641 atcagtgata gagacatccc tatcagtgat agagaactcc ctatcagtga tagagacctc
+     5701 cctatcagtg atagagagcc tcctccgagg acgtcatcaa ggagttcatg cgcttcaagg
+     5761 tgcgcatgga gggctccgtg aacggccacg agttcgagat cgagggcgag ggcgagggcc
+     5821 gcccctacga gggcacccag accgccaagc tgaaggtgac caagggcggc cccctgccct
+     5881 tcgcctggga catcctgtcc ccccagttcc agtacggctc caaggtgtac gtgaagcacc
+     5941 ccgccgacat ccccgactac aagaagctgt ccttccccga gggcttcaag tgggagcgcg
+     6001 tgatgaactt cgaggacggc ggcgtggtga ccgtgaccca ggactcctcc ctccaggacg
+     6061 gctccttcat ctacaaggtg aagttcatcg gcgtgaactt cccctccgac ggccccgtaa
+     6121 tgcagaagaa gactatgggc tgggaggcgt ccaccgagcg cctgtacccc cgcgacggcg
+     6181 tgctgaaggg cgagatccac aaggccctga agctgaagga cggcggccac tacctggtgg
+     6241 agttcaagtc catctacatg gccaagaagc ccgtgcagct gcccggctac tactacgtgg
+     6301 actccaagct ggacatcacc tcccacaacg aggactacac catcgtggag cagtacgagc
+     6361 gcgccgaggg ccgccaccac ctgttcctgt aggggccgcg actctagatc ataatcagcc
+     6421 ataccacatt tgtagaggtt ttacttgctt taaaaaacct cccacacctc cccctgaacc
+     6481 tgaaacataa aatgaatgca attgttgttg ttaacttgtt tattgcagct tataatggtt
+     6541 acaaataaag caatagcatc acaaatttca caaataaagc atttttttca ctgcattcta
+     6601 gttgtggttt gtccaaactc atcaatgtat cttaaccggt gagctctttt ttgctcacct
+     6661 gtgattgctc ctactcaggc cttctgctta gtttgatgcc tggcagttcc ctactctcgc
+     6721 cttccgcttc ctcgctcact gactcgctgc gctcggtcgt tcggctgcgg cgagcggtat
+     6781 cagctcactc aaaggcggta atacggttat ccacagaatc aggggataac gcaggaaaga
+     6841 acatgtgagc aaaaggccag caaaaggcca ggaaccgtaa aaaggccgcg ttgctggcgt
+     6901 ttttccatag gctccgcccc cctgacgagc atcacaaaaa tcgacgctca agtcagaggt
+     6961 ggcgaaaccc gacaggacta taaagatacc aggcgtttcc ccctggaagc tccctcgtgc
+     7021 gctctcctgt tccgaccctg ccgcttaccg gatacctgtc cgcctttctc ccttcgggaa
+     7081 gcgtggcgct ttctcatagc tcacgctgta ggtatctcag ttcggtgtag gtcgttcgct
+     7141 ccaagctggg ctgtgtgcac gaaccccccg ttcagcccga ccgctgcgcc ttatccggta
+     7201 actatcgtct tgagtccaac ccggtaagac acgacttatc gccactggca gcagccactg
+     7261 gtaacaggat tagcagagcg aggtatgtag gcggtgctac agagttcttg aagtggtggg
+     7321 ctaactacgg ctacactaga agaacagtat ttggtatctg cgctctgctg aagccagtta
+     7381 ccttcggaaa aagagttggt agctcttgat ccggcaaaca aaccaccgct ggtagcggtg
+     7441 gtttttttgt ttgcaagcag cagattacgc gcagaaaaaa aggatctcaa gaagatcctt
+     7501 tgatcttttc tacggggtct gacgctcagt ggaacgacgc gcgcgtaact cacgttaagg
+     7561 gattttggtc atgagcttgc gccgtcccgt caagtcagcg taatgctct 
+//

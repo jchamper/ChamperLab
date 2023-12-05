@@ -1,0 +1,156 @@
+LOCUS       Exported                2968 bp ds-DNA    circular SYN 24-5月-2022
+DEFINITION  synthetic DNA.
+ACCESSION   .
+VERSION     .
+KEYWORDS    XX22-TTTrgU2t
+SOURCE      synthetic DNA construct
+  ORGANISM  synthetic DNA construct
+REFERENCE   1  (bases 1 to 2968)
+  AUTHORS   .
+  TITLE     NEBuilder-generated Construct
+  JOURNAL   Exported  23-DEC-2021 from NEBuilder https://nebuilder.neb.com
+REFERENCE   2  (bases 1 to 2968)
+  AUTHORS   .
+  TITLE     Direct Submission
+  JOURNAL   Exported 2023年11月26日 from SnapGene 2.3.2
+            http://www.snapgene.com
+COMMENT     NEBuilder-generated oligos (UPPERCASE = gene-specific, lowercase = 
+            overlap)
+            gRNA4_backbone_fwd: 
+            gtgcagaggaggccatggtggcgacGTTTTAGAGCTAGAAATAGCAAGTTAAA
+            gRNA4_backbone_fwd 3'Tm: 60.5  3'Ta: 61.5
+            gRNA4_backbone_rev: aaaacgggatctaattcaattagagTGCATCGGCCGGGAATCG
+            gRNA4_backbone_rev 3'Tm: 71.5  3'Ta: 61.5
+            gRNA1_fwd: gcactctaattgaattagatcccGTTTTAGAGCTAGAAATAGCAAGTTAAA
+            gRNA1_fwd 3'Tm: 60.5  3'Ta: 61.5
+            gRNA1_rev: aactggtggcgaccggcttcgagTGCACCAGCCGGGAATCG
+            gRNA1_rev 3'Tm: 71.5  3'Ta: 61.5
+            gRNA2_fwd: gcactcgaagccggtcgccaccaGTTTTAGAGCTAGAAATAGCAAGTTAAA
+            gRNA2_fwd 3'Tm: 60.5  3'Ta: 61.5
+            gRNA2_rev: aacgggagtagggaaagtcaaacTGCACCAGCCGGGAATCG
+            gRNA2_rev 3'Tm: 71.5  3'Ta: 61.5
+            gRNA3_fwd: gcagtttgactttccctactcccGTTTTAGAGCTAGAAATAGCAAGTTAAA
+            gRNA3_fwd 3'Tm: 60.5  3'Ta: 61.5
+            gRNA3_rev: gtcgccaccatggcctcctcTGCACCAGCCGGGAATCG
+            gRNA3_rev 3'Tm: 71.5  3'Ta: 61.5
+FEATURES             Location/Qualifiers
+     source          1..2968
+                     /organism="synthetic DNA construct"
+                     /plasmid="Transformation_plasmid"
+                     /mol_type="other DNA"
+                     /label="source:synthetic DNA construct"
+                     /note="source:synthetic DNA construct"
+     source          2465..2484
+                     /organism="synthetic DNA construct"
+                     /plasmid="Transformation_plasmid"
+                     /mol_type="other DNA"
+                     /label="source:synthetic DNA construct"
+                     /note="source:synthetic DNA construct"
+     source          2639..2658
+                     /organism="synthetic DNA construct"
+                     /plasmid="Transformation_plasmid"
+                     /mol_type="other DNA"
+                     /label="source:synthetic DNA construct"
+                     /note="source:synthetic DNA construct"
+     primer_bind     complement(56..75)
+                     /locus_tag="pBB_S_R"
+                     /label="pBB_S_R"
+                     /note="pBB_S_R"
+     rep_origin      176..841
+                     /locus_tag="Origin"
+                     /label="Origin"
+     gene            943..1803
+                     /locus_tag="Amp resistance"
+                     /label="Amp resistance"
+                     /note="Amp resistance"
+     primer_bind     1840..1860
+                     /locus_tag="Primer IHD_S_F"
+                     /label="Primer IHD_S_F"
+                     /note="Primer IHD_S_F"
+     promoter        1947..2366
+                     /locus_tag="U6:3 Promoter"
+                     /label="U6:3 Promoter"
+                     /note="U6:3 Promoter"
+     tRNA            2367..2464
+                     /locus_tag="Start & tRNA"
+                     /label="Start & tRNA"
+                     /note="Start & tRNA"
+     misc_feature    2462..2658
+                     /note="fragment 1"
+     misc_feature    2465..2484
+                     /locus_tag="gRNA target(1)"
+                     /label="gRNA target(1)"
+                     /note="gRNA target 3"
+     misc_feature    2485..2561
+                     /locus_tag="gRNA scaffold(1)"
+                     /label="gRNA scaffold(1)"
+                     /note="gRNA scaffold"
+     tRNA            2562..2638
+                     /locus_tag="tRNA"
+                     /label="tRNA"
+     misc_feature    2634..2489
+                     /note="fragment 2"
+     misc_feature    2639..2658
+                     /locus_tag="gRNA target(3)"
+                     /label="gRNA target(3)"
+                     /note="gRNA target 4"
+     misc_feature    2659..2735
+                     /locus_tag="gRNA scaffold(2)"
+                     /label="gRNA scaffold(2)"
+                     /note="gRNA scaffold"
+     misc_feature    2741..2968
+                     /locus_tag="U6:3 Terminator"
+                     /label="U6:3 Terminator"
+                     /note="U6:3 Terminator"
+ORIGIN
+        1 gtcaggggcc ttctgcttag tttgatgcct ggcagttccc tactctcgcc ttccgcttcc
+       61 tcgctcactg actcgctgcg ctcggtcgtt cggctgcggc gagcggtatc agctcactca
+      121 aaggcggtaa tacggttatc cacagaatca ggggataacg caggaaagaa catgtgagca
+      181 aaaggccagc aaaaggccag gaaccgtaaa aaggccgcgt tgctggcgtt tttccatagg
+      241 ctccgccccc ctgacgagca tcacaaaaat cgacgctcaa gtcagaggtg gcgaaacccg
+      301 acaggactat aaagatacca ggcgtttccc cctggaagct ccctcgtgcg ctctcctgtt
+      361 ccgaccctgc cgcttaccgg atacctgtcc gcctttctcc cttcgggaag cgtggcgctt
+      421 tctcatagct cacgctgtag gtatctcagt tcggtgtagg tcgttcgctc caagctgggc
+      481 tgtgtgcacg aaccccccgt tcagcccgac cgctgcgcct tatccggtaa ctatcgtctt
+      541 gagtccaacc cggtaagaca cgacttatcg ccactggcag cagccactgg taacaggatt
+      601 agcagagcga ggtatgtagg cggtgctaca gagttcttga agtggtgggc taactacggc
+      661 tacactagaa gaacagtatt tggtatctgc gctctgctga agccagttac cttcggaaaa
+      721 agagttggta gctcttgatc cggcaaacaa accaccgctg gtagcggtgg tttttttgtt
+      781 tgcaagcagc agattacgcg cagaaaaaaa ggatctcaag aagatccttt gatcttttct
+      841 acggggtctg acgctcagtg gaacgacgcg cgcgtaactc acgttaaggg attttggtca
+      901 tgagcttgcg ccgtcccgtc aagtcagcgt aatgctctgc ttttaccaat gcttaatcag
+      961 tgaggcacct atctcagcga tctgtctatt tcgttcatcc atagttgcct gactccccgt
+     1021 cgtgtagata actacgatac gggagggctt accatctggc cccagcgctg cgatgatacc
+     1081 gcgagaacca cgctcaccgg ctccggattt atcagcaata aaccagccag ccggaagggc
+     1141 cgagcgcaga agtggtcctg caactttatc cgcctccatc cagtctatta attgttgccg
+     1201 ggaagctaga gtaagtagtt cgccagttaa tagtttgcgc aacgttgttg ccatcgctac
+     1261 aggcatcgtg gtgtcacgct cgtcgtttgg tatggcttca ttcagctccg gttcccaacg
+     1321 atcaaggcga gttacatgat cccccatgtt gtgcaaaaaa gcggttagct ccttcggtcc
+     1381 tccgatcgtt gtcagaagta agttggccgc agtgttatca ctcatggtta tggcagcact
+     1441 gcataattct cttactgtca tgccatccgt aagatgcttt tctgtgactg gtgagtactc
+     1501 aaccaagtca ttctgagaat agtgtatgcg gcgaccgagt tgctcttgcc cggcgtcaat
+     1561 acgggataat accgcgccac atagcagaac tttaaaagtg ctcatcattg gaaaacgttc
+     1621 ttcggggcga aaactctcaa ggatcttacc gctgttgaga tccagttcga tgtaacccac
+     1681 tcgtgcaccc aactgatctt cagcatcttt tactttcacc agcgtttctg ggtgagcaaa
+     1741 aacaggaagg caaaatgccg caaaaaaggg aataagggcg acacggaaat gttgaatact
+     1801 catattcttc ctttttcaat attattgaag catttatcag ggttattgtc tcatgagcgg
+     1861 atacatattt gaatgtattt agaaaaataa acaaataggg gtcagtgtta caaccaatta
+     1921 accaattctg aacattatcg cgagcctttt ttgctcacct gtgattgctc ctactcaaat
+     1981 acaaaaacat caaattttct gtcaataaag catatttatt tatatttatt ttacaggaaa
+     2041 gaattccttt taaagtgtat tttaacctat aatgaaaaac gattaaaaaa aatacataaa
+     2101 ataattcgaa aatttttgaa tagcccaggt tgataaaaat tcatttcata cgttttataa
+     2161 cttatgcccc taagtatttt ttgaccatag tgtttcaatt ctacattaat tttacagagt
+     2221 agaatgaaac gccacctact cagccaagag gcgaaaaggt tagctcgcca agcagagagg
+     2281 gcgccagtgc tcactacttt ttataattct caacttcttt ttccagactc agttcgtata
+     2341 tatagaccta ttttcaattt aacgtcgggg ctttgagtgt gtgtagacat caagcatcgg
+     2401 tggttcagtg gtagaatgct cgcctgccac gcgggcggcc cgggttcgat tcccggccga
+     2461 tgcactcgaa gccggtcgcc accagtttta gagctagaaa tagcaagtta aaataaggct
+     2521 agtccgttat caacttgaaa aagtggcacc gagtcggtgc taacaaagca ccagtggtct
+     2581 agtggtagaa tagtaccctg ccacggtaca gacccgggtt cgattcccgg ctggtgcaga
+     2641 ggaggccatg gtggcgacgt tttagagcta gaaatagcaa gttaaaataa ggctagtccg
+     2701 ttatcaactt gaaaaagtgg caccgagtcg gtgctttttt gcctacctgg agcctgagag
+     2761 ttgttcaata aaataaaaat gtttcgtttt tttgctttcg ccagtattta ttatttttca
+     2821 tcaatatgta ttcaatttgg tatgtattta gtaattgtaa tatatagaca atggttttcc
+     2881 gttgacgtac atacatctga cgtgtgttta tttagacata atagttatgt tttcacatct
+     2941 ttttaatgtt cgcttaatgc gtatgcat
+//
