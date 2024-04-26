@@ -41,7 +41,7 @@ H.YDisplayLabels=Yticklabel
 H.MissingDataLabel='0'
 s = struct(H);
 s.XAxis.TickLabelRotation = 45;
-caxis([-0.17,0.17])
+
 
 saveas(H,'fig_3_f_beta.jpg')
-save data_f_beta.mat
+save data_f_beta

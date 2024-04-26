@@ -3,7 +3,7 @@ close all
 clc
 dvar=0.01:0.0038:0.2;
 % dvar=0.1;
-ssvar=0:0.008:0.4;
+ssvar=0.4:0.008:0.7;
 % ssvar=1;
 f = 1;
 % beta = 10;
@@ -51,17 +51,16 @@ title('Wavespeed')
 
 Xticklabel=cell(size(H.XDisplayLabels))
 [Xticklabel{:}]=deal('');
-[Xticklabel{1:5:end}]=H.XDisplayLabels{1:5:end};
+[Xticklabel{1:5:51}]=H.XDisplayLabels{1:5:51};
 H.XDisplayLabels=Xticklabel
 
 Yticklabel=cell(size(H.YDisplayLabels))
 [Yticklabel{:}]=deal('');
-[Yticklabel{1:5:end}]=H.YDisplayLabels{1:5:end};
+[Yticklabel{1:5:51}]=H.YDisplayLabels{1:5:51};
 H.YDisplayLabels=Yticklabel
 H.MissingDataLabel='0'
 s = struct(H);
 s.XAxis.TickLabelRotation = 45;
-caxis([-0.17,0.17])
 
-saveas(H,'fig_3_D_ss.jpg')
-save data_D_ss
+saveas(H,'fig_3_D_ss_0.4_0.7.jpg')
+save data_D_ss_0.4_0.7

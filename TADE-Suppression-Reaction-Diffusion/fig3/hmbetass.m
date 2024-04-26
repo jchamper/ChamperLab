@@ -3,7 +3,7 @@ close all
 clc
 
 betavar=2:0.16:10;
-ssvar=0:0.008:0.7;
+ssvar=0.4:0.008:0.7;
 tic
 D = 0.1;
 f = 1;
@@ -18,11 +18,6 @@ for i=1:length(betavar)
     end
 end
 toc
-
-datatest=data;
-ii=find(data<0.005 &data>-0.005);
-datatest(ii)=nan;
-
 H=heatmap(ssvar,betavar,data,'Colormap',turbo)
 H.NodeChildren(3).YDir='normal';
 H.CellLabelColor = 'none'
@@ -32,16 +27,15 @@ ylabel('\beta')
 
 Xticklabel=cell(size(H.XDisplayLabels))
 [Xticklabel{:}]=deal('');
-[Xticklabel{1:5:end}]=H.XDisplayLabels{1:5:end};
+[Xticklabel{1:5:51}]=H.XDisplayLabels{1:5:51};
 H.XDisplayLabels=Xticklabel
 
 Yticklabel=cell(size(H.YDisplayLabels))
 [Yticklabel{:}]=deal('');
-[Yticklabel{1:5:end}]=H.YDisplayLabels{1:5:end};
+[Yticklabel{1:5:50}]=H.YDisplayLabels{1:5:50};
 H.YDisplayLabels=Yticklabel
 s = struct(H);
 s.XAxis.TickLabelRotation = 45;
-caxis([-0.17, 0.17])
 
-saveas(H,'fig_3_beta_ss.jpg')
-save data_beta_ss
+saveas(H,'fig_3_beta_ss_0.4_0.7.jpg')
+save data_beta_ss_0.4_0.7
