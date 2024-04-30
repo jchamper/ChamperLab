@@ -1,10 +1,9 @@
-LOCUS       HSDdsx_Assembly         6405 bp    DNA        linear       08-DEC-2021
+LOCUS       HSDdsx_Red3g            6405 bp    DNA        linear       20-NOV-2023
 DEFINITION  .
 ACCESSION   
 VERSION     
 SOURCE      .
   ORGANISM  .
-COMMENT     
 COMMENT     
 COMMENT     ApEinfo:methylated:1
 FEATURES             Location/Qualifiers
@@ -248,6 +247,30 @@ FEATURES             Location/Qualifiers
                      /ApEinfo_revcolor="#cd5bff"
                      /ApEinfo_graphicformat="arrow_data {{0 1 2 0 0 -1} {} 0}
                      width 5 offset 0"
+     misc_feature    complement(5917..5936)
+                     /locus_tag="Origin_R"
+                     /label="Origin_R"
+                     /ApEinfo_label="Origin_R"
+                     /ApEinfo_fwdcolor="cyan"
+                     /ApEinfo_revcolor="#cd5bff"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {} 0} width 5 offset 0"
+     misc_feature    5225..5245
+                     /locus_tag="dsxRA_F"
+                     /label="dsxRA_F"
+                     /ApEinfo_label="dsxRA_F"
+                     /ApEinfo_fwdcolor="#a273ff"
+                     /ApEinfo_revcolor="green"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {} 0} width 5 offset 0"
+     misc_feature    complement(1152..1178)
+                     /locus_tag="dsxLA_S_R"
+                     /label="dsxLA_S_R"
+                     /ApEinfo_label="dsxLA_S_R"
+                     /ApEinfo_fwdcolor="cyan"
+                     /ApEinfo_revcolor="green"
+                     /ApEinfo_graphicformat="arrow_data {{0 0.5 0 1 2 0 0 -1 0
+                     -0.5} {} 0} width 5 offset 0"
 ORIGIN
         1 TTACCAATGC TTAATCAGTG AGGCACCTAT CTCAGCGATC TGTCTATTTC GTTCATCCAT
        61 AGTTGCCTGA CTCCCCGTCG TGTAGATAAC TACGATACGG GAGGGCTTAC CATCTGGCCC
