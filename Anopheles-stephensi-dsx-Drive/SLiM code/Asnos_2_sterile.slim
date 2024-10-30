@@ -21,7 +21,7 @@ initialize() {
     // Fitness parameters:
     defineCfgParam("DD_FITNESS_VALUE", 1.0);
     defineCfgParam("DX_FITNESS_VALUE", sqrt(DD_FITNESS_VALUE));
-    defineCfgParam("SOMATIC_FITNESS_MUTLIPLIER_F", 0.796);
+    defineCfgParam("SOMATIC_FITNESS_MUTLIPLIER_F", 0.759);
     defineCfgParam("SOMATIC_FITNESS_MUTLIPLIER_M", 1.0);
     defineCfgParam("GENE_DISRUPTION_FITNESS_MULTIPLIER", 0.0);
     defineCfgParam("R2_FITNESS_VALUE", 1.0);
@@ -57,8 +57,8 @@ initialize() {
 
     // HDR phase parameters:
 
-    defineCfgParam("HOMING_PHASE_CUT_RATE_F", 0.4509);
-    defineCfgParam("HOMING_PHASE_CUT_RATE_M", 0.497);
+    defineCfgParam("HOMING_PHASE_CUT_RATE_F", 0.472);
+    defineCfgParam("HOMING_PHASE_CUT_RATE_M", 0.492);
     defineCfgParam("HOMING_EDGE_EFFECT", 0.055);
     defineCfgParam("BASELINE_HOMING_SUCCESS_RATE", 1.0);
     defineCfgParam("PARTIAL_HDR_RATE", 0.0);
@@ -903,7 +903,7 @@ early() {
     total_adults = sum(all.age > 1);
 			total_adult_females = sum(f.age > 1);
 			num_fertile_female = sum(adult_f.countOfMutationsOfType(m1) > 0 | adult_f.countOfMutationsOfType(m3) > 0); 
-			catn( num_fertile_female + "," + total_adults + "," + rate_dr + "," + rate_complete_r2 );
+			catn("DATA:: " + num_fertile_female + "," + total_adults + "," + rate_dr + "," + rate_complete_r2 );
 			if(total_adult_females == 0| p1.individualCount == 0){
 				larva_f = f[f.age==0];				
 				if(sum(larva_f.countOfMutationsOfType(m1) == 2) == 0)
