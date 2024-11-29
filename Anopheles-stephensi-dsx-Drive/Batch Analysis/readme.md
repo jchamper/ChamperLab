@@ -2,4 +2,4 @@ To calculate the mean and standard error (SE), all data are merged into a single
 
 For p-value calculations using a z-test, comparison groups are organized into separate independent CSV files. The "Batch Analysis PValue Different Groups.r" script should then used for analysis.
 
-The csv file should always be named "combined.csv". Provided csv files with different names should be renamed before use.
+The csv file should always be named "combined.csv". Provided csv files with different names (for the p-value assessments) should be renamed before use.
